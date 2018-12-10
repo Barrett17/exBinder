@@ -100,35 +100,35 @@ the buffer:
 
 @code
 enum BinderDriverCommandProtocol {
-	bcNOOP = 0,
+	BC_NOOP = 0,
 	/*	No parameters! */
 
-	bcTRANSACTION,
-	bcREPLY,
+	BC_TRANSACTION,
+	BC_REPLY,
 	/*
 		binder_transaction_data: the sent command.
 	*/
 	
-	bcACQUIRE_RESULT,
+	BC_ACQUIRE_RESULT,
 	/*
 		int32:  0 if the last BR_ATTEMPT_ACQUIRE was not successful.
 		Else you have acquired a primary reference on the object.
 	*/
 	
-	bcFREE_BUFFER,
+	BC_FREE_BUFFER,
 	/*
 		void *: ptr to transaction data received on a read
 	*/
 	
-	bcINCREFS,
-	bcACQUIRE,
-	bcRELEASE,
-	bcDECREFS,
+	BC_INCREFS,
+	BC_ACQUIRE,
+	BC_RELEASE,
+	BC_DECREFS,
 	/*
 		int32:	descriptor
 	*/
 	
-	bcATTEMPT_ACQUIRE,
+	BC_ATTEMPT_ACQUIRE,
 	/*
 		int32:	priority
 		int32:	descriptor
@@ -145,7 +145,7 @@ enum BinderDriverCommandProtocol {
 		void *: argument passed to those threads
 	*/
 	
-	bcREGISTER_LOOPER,
+	BC_REGISTER_LOOPER,
 	/*
 		No parameters.
 		Register a spawned looper thread with the device.  This must be
@@ -153,8 +153,8 @@ enum BinderDriverCommandProtocol {
 		part of its initialization with the binder.
 	*/
 	
-	bcENTER_LOOPER,
-	bcEXIT_LOOPER,
+	BC_ENTER_LOOPER,
+	BC_EXIT_LOOPER,
 	/*
 		No parameters.
 		These two commands are sent as an application-level thread
@@ -181,7 +181,7 @@ enum BinderDriverCommandProtocol {
 };
 @endcode
 
-The most interesting commands here are bcTRANSACTION and bcREPLY, which
+The most interesting commands here are BC_TRANSACTION and BC_REPLY, which
 initiate an IPC transaction and return a reply for a transaction,
 respectively.  The data structure following these commands is:
 
@@ -194,7 +194,7 @@ enum transaction_flags {
 
 struct binder_transaction_data
 {
-	// The first two are only used for bcTRANSACTION and BR_TRANSACTION,
+	// The first two are only used for BC_TRANSACTION and BR_TRANSACTION,
 	// identifying the target and contents of the transaction.
 	union {
 		size_t	handle;		// target descriptor of command transaction
@@ -222,7 +222,7 @@ struct binder_transaction_data
 @endcode
 
 Thus, to initiate an IPC transaction, you will essentially perform a
-BINDER_READ_WRITE ioctl with the write buffer containing bcTRANSACTION
+BINDER_READ_WRITE ioctl with the write buffer containing BC_TRANSACTION
 follewed by a binder_transaction_data.  In this structure @e target is
 the handle of the object that should receive the transaction (we'll talk
 about handles later), @e code tells the object what to do when it
@@ -258,14 +258,14 @@ enum BinderDriverReturnProtocol {
 	
 	BR_ACQUIRE_RESULT,
 	/*
-		int32: 0 if the last bcATTEMPT_ACQUIRE was not successful.
+		int32: 0 if the last BC_ATTEMPT_ACQUIRE was not successful.
 		Else the remote object has acquired a primary reference.
 	*/
 	
 	BR_DEAD_REPLY,
 	/*
-		The target of the last transaction (either a bcTRANSACTION or
-		a bcATTEMPT_ACQUIRE) is no longer with us.  No parameters.
+		The target of the last transaction (either a BC_TRANSACTION or
+		a BC_ATTEMPT_ACQUIRE) is no longer with us.  No parameters.
 	*/
 	
 	BR_TRANSACTION_COMPLETE,
@@ -309,7 +309,7 @@ in the local process space.
 
 The recipient, in user space will then hand this transaction over to the
 target object for it to execute and return its result.  Upon getting the
-result, a new write buffer is created containing the bcREPLY reply
+result, a new write buffer is created containing the BC_REPLY reply
 command with a binder_transaction_data structure containing the resulting
 data.  This is returned with a BINDER_WRITE_READ ioctl() on the driver,
 sending the reply back to the original process and leaving the thread

@@ -30,35 +30,35 @@ As mentioned, the core functionality of the driver is encapsulated in the BINDER
 Upon calling the driver, <em>write_buffer</em> contains a series of commands for it to perform, and upon return <em>read_buffer</em> is filled in with a series of responses for the thread to execute. In general the write buffer will consist of zero or more book-keeping commands (usually incrementing/decrementing object references) and ending with a command requiring a response (such as sending an IPC transaction or attempt to acquire a strong reference on a remote object). Likewise, the receive buffer will be filled with a series of book-keeping commands and end with either the result for the last written command, or a command to perform a new nested operation.<p>
 Here is a list of the commands that can be sent by a process to the driver, with comments describing the data that follows each command in the buffer:<p>
 <div class="fragment"><pre class="fragment"><span class="keyword">enum</span> <a class="code" href="binder__module_8h.html#a70">BinderDriverCommandProtocol</a> {
-    <a class="code" href="binder__module_8h.html#a70a46">bcNOOP</a> = 0,
+    <a class="code" href="binder__module_8h.html#a70a46">BC_NOOP</a> = 0,
         No parameters! 
 
-    <a class="code" href="binder__module_8h.html#a70a47">bcTRANSACTION</a>,
-    <a class="code" href="binder__module_8h.html#a70a48">bcREPLY</a>,
+    <a class="code" href="binder__module_8h.html#a70a47">BC_TRANSACTION</a>,
+    <a class="code" href="binder__module_8h.html#a70a48">BC_REPLY</a>,
     
         <a class="code" href="structbinder__transaction__data.html">binder_transaction_data</a>: the sent command.
     
     
-    <a class="code" href="binder__module_8h.html#a70a49">bcACQUIRE_RESULT</a>,
+    <a class="code" href="binder__module_8h.html#a70a49">BC_ACQUIRE_RESULT</a>,
     
         int32:  0 <span class="keywordflow">if</span> the last <a class="code" href="binder__module_8h.html#a69a41">BR_ATTEMPT_ACQUIRE</a> was not successful.
         Else you have acquired a primary reference on the object.
     
     
-    <a class="code" href="binder__module_8h.html#a70a50">bcFREE_BUFFER</a>,
+    <a class="code" href="binder__module_8h.html#a70a50">BC_FREE_BUFFER</a>,
     
         <span class="keywordtype">void</span> *: ptr to transaction data received on a read
     
     
-    <a class="code" href="binder__module_8h.html#a70a52">bcINCREFS</a>,
-    <a class="code" href="binder__module_8h.html#a70a53">bcACQUIRE</a>,
-    <a class="code" href="binder__module_8h.html#a70a54">bcRELEASE</a>,
-    <a class="code" href="binder__module_8h.html#a70a55">bcDECREFS</a>,
+    <a class="code" href="binder__module_8h.html#a70a52">BC_INCREFS</a>,
+    <a class="code" href="binder__module_8h.html#a70a53">BC_ACQUIRE</a>,
+    <a class="code" href="binder__module_8h.html#a70a54">BC_RELEASE</a>,
+    <a class="code" href="binder__module_8h.html#a70a55">BC_DECREFS</a>,
     
         int32:  descriptor
     
     
-    <a class="code" href="binder__module_8h.html#a70a58">bcATTEMPT_ACQUIRE</a>,
+    <a class="code" href="binder__module_8h.html#a70a58">BC_ATTEMPT_ACQUIRE</a>,
     
         int32:  priority
         int32:  descriptor
@@ -75,7 +75,7 @@ Here is a list of the commands that can be sent by a process to the driver, with
         <span class="keywordtype">void</span> *: argument passed to those threads
     
     
-    <a class="code" href="binder__module_8h.html#a70a61">bcREGISTER_LOOPER</a>,
+    <a class="code" href="binder__module_8h.html#a70a61">BC_REGISTER_LOOPER</a>,
     
         No parameters.
         Register a spawned looper thread with the device.  This must be
@@ -83,8 +83,8 @@ Here is a list of the commands that can be sent by a process to the driver, with
         part of its initialization with the binder.
     
     
-    <a class="code" href="binder__module_8h.html#a70a62">bcENTER_LOOPER</a>,
-    <a class="code" href="binder__module_8h.html#a70a63">bcEXIT_LOOPER</a>,
+    <a class="code" href="binder__module_8h.html#a70a62">BC_ENTER_LOOPER</a>,
+    <a class="code" href="binder__module_8h.html#a70a63">BC_EXIT_LOOPER</a>,
     
         No parameters.
         These two commands are sent as an application-level thread
@@ -110,7 +110,7 @@ Here is a list of the commands that can be sent by a process to the driver, with
     
 };
 </pre></div><p>
-The most interesting commands here are bcTRANSACTION and bcREPLY, which initiate an IPC transaction and return a reply for a transaction, respectively. The data structure following these commands is:<p>
+The most interesting commands here are BC_TRANSACTION and BC_REPLY, which initiate an IPC transaction and return a reply for a transaction, respectively. The data structure following these commands is:<p>
 <div class="fragment"><pre class="fragment"><span class="keyword">enum</span> <a class="code" href="binder__module_8h.html#a68">transaction_flags</a> {
     <a class="code" href="binder__module_8h.html#a68a24">tfInline</a> = 0x01,            <span class="comment">// not yet implemented</span>
     <a class="code" href="binder__module_8h.html#a68a26">tfRootObject</a> = 0x04,        <span class="comment">// contents are the component's root object</span>
@@ -119,7 +119,7 @@ The most interesting commands here are bcTRANSACTION and bcREPLY, which initiate
 
 <span class="keyword">struct </span><a class="code" href="structbinder__transaction__data.html">binder_transaction_data</a>
 {
-    <span class="comment">// The first two are only used for bcTRANSACTION and BR_TRANSACTION,</span>
+    <span class="comment">// The first two are only used for BC_TRANSACTION and BR_TRANSACTION,</span>
     <span class="comment">// identifying the target and contents of the transaction.</span>
     <span class="keyword">union </span>{
         size_t  handle;     <span class="comment">// target descriptor of command transaction</span>
@@ -145,7 +145,7 @@ The most interesting commands here are bcTRANSACTION and bcREPLY, which initiate
     } data;
 };
 </pre></div><p>
-Thus, to initiate an IPC transaction, you will essentially perform a BINDER_READ_WRITE ioctl with the write buffer containing bcTRANSACTION follewed by a <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a>. In this structure <em>target</em> is the handle of the object that should receive the transaction (we'll talk about handles later), <em>code</em> tells the object what to do when it receives the transaction, <em>priority</em> is the thread priority to run the IPC at, and there is a <em>data</em> buffer containing the transaction data, as well as an (optional) additional <em>offsets</em> buffer of meta-data.<p>
+Thus, to initiate an IPC transaction, you will essentially perform a BINDER_READ_WRITE ioctl with the write buffer containing BC_TRANSACTION follewed by a <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a>. In this structure <em>target</em> is the handle of the object that should receive the transaction (we'll talk about handles later), <em>code</em> tells the object what to do when it receives the transaction, <em>priority</em> is the thread priority to run the IPC at, and there is a <em>data</em> buffer containing the transaction data, as well as an (optional) additional <em>offsets</em> buffer of meta-data.<p>
 Given the <em>target</em> handle, the driver determines which process that object lives in and dispatches this transaction to one of the waiting threads in its thread pool (spawning a new thread if needed). That thread is waiting in a BINDER_WRITE_READ ioctl() to the driver, and so returns with its read buffer filled in with the commands it needs to execute. These commands a very similar to the write commands, for the most part corresponding to write operations on the other side:<p>
 <div class="fragment"><pre class="fragment"><span class="keyword">enum</span> <a class="code" href="binder__module_8h.html#a69">BinderDriverReturnProtocol</a> {
     <a class="code" href="binder__module_8h.html#a69a28">BR_ERROR</a> = -1,
@@ -166,14 +166,14 @@ Given the <em>target</em> handle, the driver determines which process that objec
     
     <a class="code" href="binder__module_8h.html#a69a34">BR_ACQUIRE_RESULT</a>,
     
-        int32: 0 <span class="keywordflow">if</span> the last <a class="code" href="binder__module_8h.html#a70a58">bcATTEMPT_ACQUIRE</a> was not successful.
+        int32: 0 <span class="keywordflow">if</span> the last <a class="code" href="binder__module_8h.html#a70a58">BC_ATTEMPT_ACQUIRE</a> was not successful.
         Else the remote object has acquired a primary reference.
     
     
     <a class="code" href="binder__module_8h.html#a69a35">BR_DEAD_REPLY</a>,
     
-        The target of the last transaction (either a <a class="code" href="binder__module_8h.html#a70a47">bcTRANSACTION</a> or
-        a <a class="code" href="binder__module_8h.html#a70a58">bcATTEMPT_ACQUIRE</a>) is no longer with us.  No parameters.
+        The target of the last transaction (either a <a class="code" href="binder__module_8h.html#a70a47">BC_TRANSACTION</a> or
+        a <a class="code" href="binder__module_8h.html#a70a58">BC_ATTEMPT_ACQUIRE</a>) is no longer with us.  No parameters.
     
     
     <a class="code" href="binder__module_8h.html#a69a36">BR_TRANSACTION_COMPLETE</a>,
@@ -209,7 +209,7 @@ Given the <em>target</em> handle, the driver determines which process that objec
 };
 </pre></div><p>
 Continuing our example, the receiving thread will come back with a BR_TRANSACTION command at the end of its buffer. This command uses the same <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a> structure that was used to send the data, basically containing the same information that was sent but now available in the local process space.<p>
-The recipient, in user space will then hand this transaction over to the target object for it to execute and return its result. Upon getting the result, a new write buffer is created containing the bcREPLY reply command with a <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a> structure containing the resulting data. This is returned with a BINDER_WRITE_READ ioctl() on the driver, sending the reply back to the original process and leaving the thread waiting for the next transaction to perform.<p>
+The recipient, in user space will then hand this transaction over to the target object for it to execute and return its result. Upon getting the result, a new write buffer is created containing the BC_REPLY reply command with a <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a> structure containing the resulting data. This is returned with a BINDER_WRITE_READ ioctl() on the driver, sending the reply back to the original process and leaving the thread waiting for the next transaction to perform.<p>
 The original thread finally returns back from its own BINDER_WRITE_READ with a BR_REPLY command containing the reply data.<p>
 Note that the original thread may also receive BR_TRANSACTION commands while it is waiting for a reply. This represents a recursion across processes  the receiving thread making a call on to an object back in the original process. It is the responsibility of the driver to keep track of all active transactions, so it can dispatch transactions to the correct thread when recursion happens.<h3><a class="anchor" name="ObjectMappingAndReferencing">
 Object Mapping and Referencing</a></h3>

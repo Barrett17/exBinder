@@ -363,7 +363,7 @@ status_t SLooper::_EnterLoop(SLooper *parent)
 	status_t status = B_ERROR;
 	// This(0) can return NULL if called during shutdown
 	if (looper) {
-		looper->m_out.WriteInt32(bcREGISTER_LOOPER);
+		looper->m_out.WriteInt32(BC_REGISTER_LOOPER);
 		status = looper->_LoopSelf();
 	}
 	return status;
@@ -374,13 +374,13 @@ status_t SLooper::Loop(bool isMain)
 	SLooper* loop = This();
 	loop->m_spawnedInternally = false;
 	// berr << "SLooper: " << loop << " (" << loop->m_thid << ") entering! " << endl;
-	loop->m_out.WriteInt32(bcENTER_LOOPER);
+	loop->m_out.WriteInt32(BC_ENTER_LOOPER);
 	status_t result;
 	do {
 		result = loop->_LoopSelf();
 		//berr << "Looper " << loop << (isMain ? "(main)" : "(not main)") << " returned with: " << (-result) << endl;
 	} while (isMain && !loop->m_signaled && result != -ECONNREFUSED);
-	loop->m_out.WriteInt32(bcEXIT_LOOPER);
+	loop->m_out.WriteInt32(BC_EXIT_LOOPER);
 	loop->_TransactWithDriver(false);
 	// berr << "SLooper: " << loop << " (" << loop->m_thid << ") exiting! " << endl;
 	return B_OK;
@@ -747,7 +747,7 @@ status_t SLooper::IncrefsHandle(int32_t handle)
 #if BINDER_REFCOUNT_MSGS
 	berr << "Writing increfs for handle " << handle << endl;
 #endif
-	m_out.WriteInt32(bcINCREFS);
+	m_out.WriteInt32(BC_INCREFS);
 	m_out.WriteInt32(handle);
 	return B_OK;
 }
@@ -758,7 +758,7 @@ SLooper::DecrefsHandle(int32_t handle)
 #if BINDER_REFCOUNT_MSGS
 	berr << "Writing decrefs for handle " << handle << endl;
 #endif
-	m_out.WriteInt32(bcDECREFS);
+	m_out.WriteInt32(BC_DECREFS);
 	m_out.WriteInt32(handle);
 	return B_OK;
 }
@@ -768,7 +768,7 @@ status_t SLooper::AcquireHandle(int32_t handle)
 #if BINDER_REFCOUNT_MSGS
 	berr << "Writing acquire for handle " << handle << endl;
 #endif
-	m_out.WriteInt32(bcACQUIRE);
+	m_out.WriteInt32(BC_ACQUIRE);
 	m_out.WriteInt32(handle);
 	return B_OK;
 }
@@ -779,7 +779,7 @@ status_t SLooper::ReleaseHandle(int32_t handle)
 #if BINDER_REFCOUNT_MSGS
 	berr << "Writing release for handle " << handle << endl;
 #endif
-	m_out.WriteInt32(bcRELEASE);
+	m_out.WriteInt32(BC_RELEASE);
 	m_out.WriteInt32(handle);
 	return B_OK;
 }
@@ -791,7 +791,7 @@ status_t SLooper::AttemptAcquireHandle(int32_t handle)
 #if BINDER_REFCOUNT_MSGS
 	berr << "Writing attempt acquire for handle " << handle << endl;
 #endif
-	m_out.WriteInt32(bcATTEMPT_ACQUIRE);
+	m_out.WriteInt32(BC_ATTEMPT_ACQUIRE);
 	m_out.WriteInt32(m_priority);
 	m_out.WriteInt32(handle);
 	status_t result = B_ERROR;
@@ -841,7 +841,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			#if BINDER_REFCOUNT_RESULT_MSGS
 			berr << "IncStrong() result on " << ptr << ": " << r << endl;
 			#endif
-			m_out.WriteInt32(bcACQUIRE_DONE);
+			m_out.WriteInt32(BC_ACQUIRE_DONE);
 			m_out.WriteInt64((int64_t)ptr);
 			m_out.WriteInt64((int64_t)atom);
 		} break;
@@ -877,7 +877,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			//	fprintf(stderr, "Failing with bad cookie: got %p, expected %p, object %p\n", atom, static_cast<SAtom*>(ptr), ptr);
 			//}
 			DbgOnlyFatalErrorIf(success && ptr != atom, "SLooper: Driver BR_ATTEMPT_ACQUIRE returned Binder address with incorrect SAtom cookie!");
-			m_out.WriteInt32(bcACQUIRE_RESULT);
+			m_out.WriteInt32(BC_ACQUIRE_RESULT);
 			m_out.WriteInt32((int32_t)success);
 			#if BINDER_REFCOUNT_RESULT_MSGS
 			berr << "AttemptIncStrong() result on " << ptr << ": " << success << endl;
@@ -897,7 +897,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			#if BINDER_REFCOUNT_RESULT_MSGS
 			berr << "IncWeak() result on " << ptr << ": " << r << endl;
 			#endif
-			m_out.WriteInt32(bcINCREFS_DONE);
+			m_out.WriteInt32(BC_INCREFS_DONE);
 			m_out.WriteInt64((int64_t)ptr);
 			m_out.WriteInt64((int64_t)atom);
 		} break;
@@ -1045,7 +1045,7 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 		} else if (cmd == BR_ACQUIRE_RESULT) {
 			int32_t result = m_in.ReadInt32();
 #if BINDER_BUFFER_MSGS
-			berr << "Result of bcATTEMPT_ACQUIRE: " << result << endl;
+			berr << "Result of BC_ATTEMPT_ACQUIRE: " << result << endl;
 #endif
 			if (acquireResult) {
 				*acquireResult = result ? B_OK : B_NOT_ALLOWED;
@@ -1081,8 +1081,8 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 #if BINDER_BUFFER_MSGS
 				berr << "Immediately freeing buffer for " << tr.data.ptr.buffer << endl;
 #endif
-				ErrFatalErrorIf(tr.data.ptr.buffer == NULL, "Sending NULL bcFREE_BUFFER!");
-				m_out.WriteInt32(bcFREE_BUFFER);
+				ErrFatalErrorIf(tr.data.ptr.buffer == NULL, "Sending NULL BC_FREE_BUFFER!");
+				m_out.WriteInt32(BC_FREE_BUFFER);
 				m_out.WriteInt64((int64_t)tr.data.ptr.buffer);
 			}
 			break;
@@ -1117,8 +1117,8 @@ SLooper::_BufferFree(const void* data, ssize_t /*len*/, void* context)
 		berr	<< "Freeing binder buffer for " << data << ", now have "
 				<< (atomic_fetch_add(&g_openBuffers, -1) - 1) << " open." << endl;
 #endif
-		ErrFatalErrorIf(data == NULL, "Sending NULL bcFREE_BUFFER!");
-		reinterpret_cast<SLooper*>(context)->m_out.WriteInt32(bcFREE_BUFFER);
+		ErrFatalErrorIf(data == NULL, "Sending NULL BC_FREE_BUFFER!");
+		reinterpret_cast<SLooper*>(context)->m_out.WriteInt32(BC_FREE_BUFFER);
 		reinterpret_cast<SLooper*>(context)->m_out.WriteInt64((int64_t)data);
 	} else {
 		ErrFatalError("NULL _BufferFree()!");
@@ -1130,7 +1130,7 @@ SLooper::_Reply(uint32_t flags, const SParcel& data)
 {
 	status_t err;
 	status_t statusBuffer;
-	err = _WriteTransaction(bcREPLY, flags, -1, 0, data, &statusBuffer);
+	err = _WriteTransaction(BC_REPLY, flags, -1, 0, data, &statusBuffer);
 	if (err < B_OK) return err;
 	
 	return _WaitForCompletion();
@@ -1289,7 +1289,7 @@ SLooper::Transact(int32_t handle, uint32_t code, const SParcel& data,
 		<< ": " << data << endl;
 #endif
 
-	status_t err = _WriteTransaction(bcTRANSACTION, 0, handle, code, data);
+	status_t err = _WriteTransaction(BC_TRANSACTION, 0, handle, code, data);
 	if (err < B_OK) {
 		if (reply) reply->Reference(NULL, err);
 		return err;

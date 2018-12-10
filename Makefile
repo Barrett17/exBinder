@@ -20,7 +20,7 @@ SRC_DOCS:= $(TOPDIR)docs
 SRC_HEADERS:= $(TOPDIR)headers
 SRC_INTERFACES:= $(TOPDIR)interfaces
 SRC_LIBRARIES:= $(TOPDIR)libraries
-SRC_MODULES:= $(TOPDIR)modules
+#SRC_MODULES:= $(TOPDIR)modules
 SRC_SCRIPTS:= $(TOPDIR)scripts
 SRC_SERVERS:= $(TOPDIR)servers
 SRC_TOOLS:= $(TOPDIR)tools
@@ -83,7 +83,7 @@ endif
 # The 'nomodules' goal says to not do anything with
 # modules when building and cleaning.  Only work with
 # user-space code.
-NO_MODULES:= $(filter nomodules,$(MAKECMDGOALS))
+#NO_MODULES:= $(filter nomodules,$(MAKECMDGOALS))
 
 # The 'debugtools' goal says to compile build tools with
 # debug options.  Normally they are compiled with release
@@ -152,25 +152,25 @@ MODULE_CFLAGS:= \
 	$(foreach header,$(C_SYSTEM_INCLUDES),-I $(PWD)/$(header)) \
 	$(foreach header,$(C_INCLUDES),-I $(PWD)/$(header))
 
-.PHONY: modules
-modules::
-	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)'
+#.PHONY: modules
+#modules::
+#	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)'
 
-.PHONY: modules_install
-modules_install::
-	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' modules_install
+#.PHONY: modules_install
+#modules_install::
+#	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' modules_install
 
-.PHONY: modules_clean
-modules_clean::
-	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' clean
+#.PHONY: modules_clean
+#modules_clean::
+#	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' clean
 
-.PHONY: loadmodules
-loadmodules::
-	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' loadmodules
+#.PHONY: loadmodules
+#loadmodules::
+#	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' loadmodules
 
-.PHONY: unloadmodules
-unloadmodules::
-	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' unloadmodules
+#.PHONY: unloadmodules
+#unloadmodules::
+#	@$(MAKE) -C $(SRC_MODULES)/binder --no-print-directory CUSTOM_CFLAGS='$(MODULE_CFLAGS)' unloadmodules
 
 .PHONY: test
 test:: user
@@ -183,15 +183,15 @@ runshell:: user
 # Build the entire world!
 .PHONY: all
 all:: user
-ifeq ($(NO_MODULES),)
-all:: loadmodules
-endif
+#ifeq ($(NO_MODULES),)
+#all:: loadmodules
+#endif
 
 .PHONY: clean
 clean::
-ifeq ($(NO_MODULES),)
-	@$(MAKE) -C $(SRC_MODULES)/binder clean
-endif
+#ifeq ($(NO_MODULES),)
+#	@$(MAKE) -C $(SRC_MODULES)/binder clean
+#endif
 	@rm -rf $(ALL_TARGETS)
 	@rm -rf $(ALL_INTERMEDIATES)
 	@echo "All outputs removed."
@@ -200,9 +200,9 @@ endif
 
 .PHONY: realclean
 realclean::
-ifeq ($(NO_MODULES),)
-	@$(MAKE) -C $(SRC_MODULES)/binder clean
-endif
+#ifeq ($(NO_MODULES),)
+#	@$(MAKE) -C $(SRC_MODULES)/binder clean
+#endif
 	@rm -rf build
 	@echo "Entire build directory removed."
 
@@ -210,8 +210,8 @@ endif
 help::
 	@echo "Top-level targets:"
 	@echo "  user: (default) Build all user-space code into build/"
-	@echo "  modules: Build all kernel modules"
-	@echo "  loadmodules: Build modules and load into kernel"
+#	@echo "  modules: Build all kernel modules"
+#	@echo "  loadmodules: Build modules and load into kernel"
 	@echo "  all: Build user, modules, loadmodules, test"
 	@echo "  interfaces: Build all .h/cpp files from IDLs"
 	@echo "  pidgen: Build the pidgen tool and rebuild any needed interfaces"
@@ -222,22 +222,22 @@ help::
 	@echo "  runshell: Run smooved with an interactive BinderShell session"
 	@echo
 	@echo "Cleanup targets:"
-	@echo "  unloadmodules: Unload modules from kernel"
+#	@echo "  unloadmodules: Unload modules from kernel"
 	@echo "  clean: Remove all built files and kernel modules"
 	@echo "  cleandocs: Remove all generated documentation"
 	@echo "  realclean: Remove everything under build/ and kernel modules"
 	@echo
 	@echo "Modifier targets:"
-	@echo "  nomodules: Don't do anything with kernel modules"
+#	@echo "  nomodules: Don't do anything with kernel modules"
 	@echo "  debugtools: Use debug options when compiling build tools"
 	@echo "  showcommands: Show raw command lines being executed"
 	@echo
 	@echo "Available sub-targets:"
 	@echo "  $(ALL_TARGET_NAMES)"
 	
-.PHONY: nomodules
-nomodules::
-	@echo >/dev/null
+#.PHONY: nomodules
+#nomodules::
+#	@echo >/dev/null
 
 .PHONY: debugtools
 debugtools::

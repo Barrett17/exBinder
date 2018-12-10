@@ -756,13 +756,14 @@ ssize_t SParcel::WriteBinder(const small_flat_data& val)
 {
 	flat_binder_object data;
 	data.type = B_PACK_LARGE_TYPE(B_UNPACK_TYPE_CODE(val.type));
-	data.length = sizeof(flat_binder_object)-sizeof(large_flat_header);
+	// XXXB
+	//data.length = sizeof(flat_binder_object)-sizeof(large_flat_header);
 	if ((data.binder=val.data.object) != NULL) {
-		if (data.type == kPackedLargeBinderType) {
-			data.cookie = static_cast<SAtom*>(static_cast<IBinder*>(data.binder));
-		} else if (data.type == kPackedLargeBinderWeakType) {
-			data.cookie = static_cast<SAtom::weak_atom_ptr*>(data.binder)->atom;
-			data.binder = static_cast<SAtom::weak_atom_ptr*>(data.binder)->cookie;
+		if (data.type == BINDER_TYPE_BINDER) {
+			data.cookie = static_cast<SAtom*>(static_cast<IBinder*>((void*)data.binder));
+		} else if (data.type == BINDER_TYPE_WEAK_BINDER) {
+			data.cookie = static_cast<SAtom::weak_atom_ptr*>((void*)data.binder)->atom;
+			data.binder = static_cast<SAtom::weak_atom_ptr*>((void*)data.binder)->cookie;
 		}
 	}
 	return WriteBinder(data);
@@ -1025,11 +1026,11 @@ ssize_t SParcel::ReadSmallDataOrObject(small_flat_data* out, const void* who)
 			= reinterpret_cast<const flat_binder_object*>(m_data+m_pos-sizeof(small_flat_data));
 		const size_t dataSize = out->data.uinteger;
 		m_pos += dataSize;
-		if ((out->data.object=obj->binder) != NULL && out->type == kPackedLargeBinderWeakType) {
+		if ((out->data.object=obj->binder) != NULL && out->type == BINDER_TYPE_WEAK_BINDER) {
 			// Weak binders are special -- we need to re-construct a weak_atom_ptr
 			// from the large flattened representation.
 			SAtom::weak_atom_ptr* weakp =
-				static_cast<SAtom*>(obj->cookie)->CreateWeak(obj->binder);
+				static_cast<SAtom*>((void*)obj->cookie)->CreateWeak(obj->binder);
 			if (!weakp) return B_NO_MEMORY;
 		}
 		out->type = B_PACK_SMALL_TYPE(B_UNPACK_TYPE_CODE(out->type), sizeof(void*));
@@ -1042,11 +1043,11 @@ ssize_t SParcel::ReadSmallDataOrObject(small_flat_data* out, const void* who)
 	if (amt != sizeof(flat_binder_object)-sizeof(small_flat_data)) return amt < 0 ? amt : B_DATA_TRUNCATED;
 	
 	const size_t dataSize = out->data.uinteger;
-	if ((out->data.object=obj.binder) != NULL && out->type == kPackedLargeBinderWeakType) {
+	if ((out->data.object=obj.binder) != NULL && out->type == BINDER_TYPE_WEAK_BINDER) {
 		// Weak binders are special -- we need to re-construct a weak_atom_ptr
 		// from the large flattened representation.
 		SAtom::weak_atom_ptr* weakp =
-			static_cast<SAtom*>(obj.cookie)->CreateWeak(obj.binder);
+			static_cast<SAtom*>((void*)obj.cookie)->CreateWeak(obj.binder);
 		if (!weakp) return B_NO_MEMORY;
 	}
 	out->type = B_PACK_SMALL_TYPE(B_UNPACK_TYPE_CODE(out->type), sizeof(void*));
@@ -1809,7 +1810,7 @@ void SParcel::PrintToStream(const sptr<ITextOutput>& io, uint32_t flags) const
 			const flat_binder_object* flat
 				= reinterpret_cast<flat_binder_object*>(m_data+m_binders[i]);
 			io << endl << "Binder #" << i << " @" << (void*)(m_binders[i]) << ": "
-				<< STypeCode(B_UNPACK_TYPE_CODE(flat->type)) << " = " << flat->binder;
+				<< STypeCode(B_UNPACK_TYPE_CODE(flat->type)) << " = " << (void*)flat->binder;
 		}
 		io << dedent;
 	} else if (Length() < 0) {

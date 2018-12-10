@@ -47,7 +47,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a9">BINDER_THREAD_EXIT</a>&nbsp;&nbsp;&nbsp;_IOW(BINDER_IOC_MAGIC, 8, int)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a10">BINDER_VERSION</a>&nbsp;&nbsp;&nbsp;_IOWR(BINDER_IOC_MAGIC, 9, <a class="el" href="structbinder__version.html">binder_version_t</a>)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a10">BINDER_VERSION</a>&nbsp;&nbsp;&nbsp;_IOWR(BINDER_IOC_MAGIC, 9, <a class="el" href="structbinder__version.html">binder_version</a>)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a2">BINDER_WRITE_READ</a>&nbsp;&nbsp;&nbsp;_IOWR(BINDER_IOC_MAGIC, 1, <a class="el" href="structbinder__write__read.html">binder_write_read_t</a>)</td></tr>
 
@@ -56,7 +56,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">typedef <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a16">binder_transaction_data_t</a></td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">typedef <a class="el" href="structbinder__version.html">binder_version</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a14">binder_version_t</a></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">typedef <a class="el" href="structbinder__version.html">binder_version</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a14">binder_version</a></td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">typedef <a class="el" href="structbinder__wakeup__time.html">binder_wakeup_time</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="binder__module_8h.html#a17">binder_wakeup_time_t</a></td></tr>
 
@@ -66,10 +66,10 @@
 
 <tr><td colspan="2"><br><h2>Enumerations</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom">{ <br>
-&nbsp;&nbsp;<a class="el" href="binder__module_8h.html#a67a18">kPackedLargeBinderType</a> =  B_PACK_LARGE_TYPE(B_BINDER_TYPE), 
-<a class="el" href="binder__module_8h.html#a67a19">kPackedLargeBinderWeakType</a> =  B_PACK_LARGE_TYPE(B_BINDER_WEAK_TYPE), 
-<a class="el" href="binder__module_8h.html#a67a20">kPackedLargeBinderHandleType</a> =  B_PACK_LARGE_TYPE(B_BINDER_HANDLE_TYPE), 
-<a class="el" href="binder__module_8h.html#a67a21">kPackedLargeBinderWeakHandleType</a> =  B_PACK_LARGE_TYPE(B_BINDER_WEAK_HANDLE_TYPE), 
+&nbsp;&nbsp;<a class="el" href="binder__module_8h.html#a67a18">BINDER_TYPE_BINDER</a> =  B_PACK_LARGE_TYPE(B_BINDER_TYPE), 
+<a class="el" href="binder__module_8h.html#a67a19">BINDER_TYPE_WEAK_BINDER</a> =  B_PACK_LARGE_TYPE(B_BINDER_WEAK_TYPE), 
+<a class="el" href="binder__module_8h.html#a67a20">BINDER_TYPE_HANDLE</a> =  B_PACK_LARGE_TYPE(B_BINDER_HANDLE_TYPE), 
+<a class="el" href="binder__module_8h.html#a67a21">BINDER_TYPE_WEAK_HANDLE</a> =  B_PACK_LARGE_TYPE(B_BINDER_WEAK_HANDLE_TYPE), 
 <br>
 &nbsp;&nbsp;<a class="el" href="binder__module_8h.html#a67a22">kPackedLargeBinderNodeType</a> =  B_PACK_LARGE_TYPE(B_BINDER_NODE_TYPE), 
 <a class="el" href="binder__module_8h.html#a67a23">kPackedLargeBinderWeakNodeType</a> =  B_PACK_LARGE_TYPE(B_BINDER_WEAK_NODE_TYPE)
@@ -376,7 +376,7 @@
     <td class="mdRow">
       <table cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td class="md" nowrap valign="top">#define BINDER_VERSION&nbsp;&nbsp;&nbsp;_IOWR(BINDER_IOC_MAGIC, 9, <a class="el" href="structbinder__version.html">binder_version_t</a>)          </td>
+          <td class="md" nowrap valign="top">#define BINDER_VERSION&nbsp;&nbsp;&nbsp;_IOWR(BINDER_IOC_MAGIC, 9, <a class="el" href="structbinder__version.html">binder_version</a>)          </td>
         </tr>
       </table>
     </td>
@@ -463,13 +463,13 @@
     </td>
   </tr>
 </table>
-<a class="anchor" name="a14"></a><!-- doxytag: member="binder_module.h::binder_version_t" ref="a14" args="" --><p>
+<a class="anchor" name="a14"></a><!-- doxytag: member="binder_module.h::binder_version" ref="a14" args="" --><p>
 <table class="mdTable" cellpadding="2" cellspacing="0">
   <tr>
     <td class="mdRow">
       <table cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td class="md" nowrap valign="top">typedef struct <a class="el" href="structbinder__version.html">binder_version</a>  <a class="el" href="structbinder__version.html">binder_version_t</a>          </td>
+          <td class="md" nowrap valign="top">typedef struct <a class="el" href="structbinder__version.html">binder_version</a>  <a class="el" href="structbinder__version.html">binder_version</a>          </td>
         </tr>
       </table>
     </td>
@@ -578,13 +578,13 @@
 <p>
 <dl compact><dt><b>Enumerator: </b></dt><dd>
 <table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" name="a67a18"></a><!-- doxytag: member="kPackedLargeBinderType" ref="a67a18" args="" -->kPackedLargeBinderType</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" name="a67a18"></a><!-- doxytag: member="BINDER_TYPE_BINDER" ref="a67a18" args="" -->BINDER_TYPE_BINDER</em>&nbsp;</td><td>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" name="a67a19"></a><!-- doxytag: member="kPackedLargeBinderWeakType" ref="a67a19" args="" -->kPackedLargeBinderWeakType</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" name="a67a19"></a><!-- doxytag: member="BINDER_TYPE_WEAK_BINDER" ref="a67a19" args="" -->BINDER_TYPE_WEAK_BINDER</em>&nbsp;</td><td>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" name="a67a20"></a><!-- doxytag: member="kPackedLargeBinderHandleType" ref="a67a20" args="" -->kPackedLargeBinderHandleType</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" name="a67a20"></a><!-- doxytag: member="BINDER_TYPE_HANDLE" ref="a67a20" args="" -->BINDER_TYPE_HANDLE</em>&nbsp;</td><td>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" name="a67a21"></a><!-- doxytag: member="kPackedLargeBinderWeakHandleType" ref="a67a21" args="" -->kPackedLargeBinderWeakHandleType</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" name="a67a21"></a><!-- doxytag: member="BINDER_TYPE_WEAK_HANDLE" ref="a67a21" args="" -->BINDER_TYPE_WEAK_HANDLE</em>&nbsp;</td><td>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" name="a67a22"></a><!-- doxytag: member="kPackedLargeBinderNodeType" ref="a67a22" args="" -->kPackedLargeBinderNodeType</em>&nbsp;</td><td>
 </td></tr>

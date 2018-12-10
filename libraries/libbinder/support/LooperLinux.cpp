@@ -128,7 +128,7 @@ static int32_t open_binder(int ignored)
 	if (fd >= 0) {
 		fcntl(fd, F_SETFD, FD_CLOEXEC);
 		if (!g_haveVersion) {
-			binder_version_t vers;
+			binder_version vers;
 			status_t result = ioctl_binder(fd, BINDER_VERSION, &vers, sizeof(vers));
 			if (result == -1) {
 				berr << "binder ioctl to obtain version failed: " << strerror(errno) << endl;

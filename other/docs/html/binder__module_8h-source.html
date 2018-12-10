@@ -37,10 +37,10 @@
 <a name="l00029"></a>00029 <span class="preprocessor"></span>
 <a name="l00030"></a>00030 <span class="comment">// These are pre-packed type constants for the object type codes.</span>
 <a name="l00031"></a>00031 <span class="keyword">enum</span> {
-<a name="l00032"></a>00032     <a class="code" href="binder__module_8h.html#a67a18">kPackedLargeBinderType</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a23">B_BINDER_TYPE</a>),
-<a name="l00033"></a>00033     <a class="code" href="binder__module_8h.html#a67a19">kPackedLargeBinderWeakType</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a24">B_BINDER_WEAK_TYPE</a>),
-<a name="l00034"></a>00034     <a class="code" href="binder__module_8h.html#a67a20">kPackedLargeBinderHandleType</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a25">B_BINDER_HANDLE_TYPE</a>),
-<a name="l00035"></a>00035     <a class="code" href="binder__module_8h.html#a67a21">kPackedLargeBinderWeakHandleType</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a26">B_BINDER_WEAK_HANDLE_TYPE</a>),
+<a name="l00032"></a>00032     <a class="code" href="binder__module_8h.html#a67a18">BINDER_TYPE_BINDER</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a23">B_BINDER_TYPE</a>),
+<a name="l00033"></a>00033     <a class="code" href="binder__module_8h.html#a67a19">BINDER_TYPE_WEAK_BINDER</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a24">B_BINDER_WEAK_TYPE</a>),
+<a name="l00034"></a>00034     <a class="code" href="binder__module_8h.html#a67a20">BINDER_TYPE_HANDLE</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a25">B_BINDER_HANDLE_TYPE</a>),
+<a name="l00035"></a>00035     <a class="code" href="binder__module_8h.html#a67a21">BINDER_TYPE_WEAK_HANDLE</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a26">B_BINDER_WEAK_HANDLE_TYPE</a>),
 <a name="l00036"></a>00036     <a class="code" href="binder__module_8h.html#a67a22">kPackedLargeBinderNodeType</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a27">B_BINDER_NODE_TYPE</a>),
 <a name="l00037"></a>00037     <a class="code" href="binder__module_8h.html#a67a23">kPackedLargeBinderWeakNodeType</a> = <a class="code" href="TypeConstants_8h.html#a1">B_PACK_LARGE_TYPE</a>(<a class="code" href="TypeConstants_8h.html#a88a28">B_BINDER_WEAK_NODE_TYPE</a>),
 <a name="l00038"></a>00038 };
@@ -89,7 +89,7 @@
 <a name="l00081"></a>00081 <span class="comment">// Use with BINDER_VERSION, driver fills in fields.</span>
 <a name="l00082"></a><a class="code" href="structbinder__version.html">00082</a> <span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code" href="structbinder__version.html">binder_version</a> {
 <a name="l00083"></a><a class="code" href="structbinder__version.html#o0">00083</a>     <span class="keywordtype">signed</span> <span class="keywordtype">long</span>     protocol_version;   <span class="comment">// driver protocol version -- increment with incompatible change</span>
-<a name="l00084"></a>00084 } <a class="code" href="structbinder__version.html">binder_version_t</a>;
+<a name="l00084"></a>00084 } <a class="code" href="structbinder__version.html">binder_version</a>;
 <a name="l00085"></a>00085 
 <a name="l00086"></a>00086 <span class="comment">// This is the current protocol version.</span>
 <a name="l00087"></a><a class="code" href="binder__module_8h.html#a0">00087</a> <span class="preprocessor">#define BINDER_CURRENT_PROTOCOL_VERSION 4</span>
@@ -103,7 +103,7 @@
 <a name="l00095"></a><a class="code" href="binder__module_8h.html#a7">00095</a> <span class="preprocessor"></span><span class="preprocessor">#define BINDER_SET_IDLE_PRIORITY    _IOW(BINDER_IOC_MAGIC, 6, int)</span>
 <a name="l00096"></a><a class="code" href="binder__module_8h.html#a8">00096</a> <span class="preprocessor"></span><span class="preprocessor">#define BINDER_SET_CONTEXT_MGR  _IOW(BINDER_IOC_MAGIC, 7, int)</span>
 <a name="l00097"></a><a class="code" href="binder__module_8h.html#a9">00097</a> <span class="preprocessor"></span><span class="preprocessor">#define BINDER_THREAD_EXIT  _IOW(BINDER_IOC_MAGIC, 8, int)</span>
-<a name="l00098"></a><a class="code" href="binder__module_8h.html#a10">00098</a> <span class="preprocessor"></span><span class="preprocessor">#define BINDER_VERSION _IOWR(BINDER_IOC_MAGIC, 9, binder_version_t)</span>
+<a name="l00098"></a><a class="code" href="binder__module_8h.html#a10">00098</a> <span class="preprocessor"></span><span class="preprocessor">#define BINDER_VERSION _IOWR(BINDER_IOC_MAGIC, 9, binder_version)</span>
 <a name="l00099"></a><a class="code" href="binder__module_8h.html#a11">00099</a> <span class="preprocessor"></span><span class="preprocessor">#define BINDER_IOC_MAXNR 9</span>
 <a name="l00100"></a>00100 <span class="preprocessor"></span>
 <a name="l00101"></a>00101 <span class="comment">// NOTE: Two special error codes you should check for when calling</span>

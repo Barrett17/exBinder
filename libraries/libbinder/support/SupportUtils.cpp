@@ -313,19 +313,19 @@ status_t unflatten_binder(const small_flat_data& flat, wptr<IBinder>* out)
 void acquire_object(const flat_binder_object& obj, const void* who)
 {
 	switch (obj.type) {
-		case kPackedLargeBinderType:
-			if (obj.binder) B_INC_STRONG(static_cast<SAtom*>(obj.cookie), who);
+		case BINDER_TYPE_BINDER:
+			if (obj.binder) B_INC_STRONG(static_cast<SAtom*>((void*)obj.cookie), who);
 			return;
-		case kPackedLargeBinderWeakType:
-			if (obj.binder) B_INC_WEAK(static_cast<SAtom*>(obj.cookie), who);
+		case BINDER_TYPE_WEAK_BINDER:
+			if (obj.binder) B_INC_WEAK(static_cast<SAtom*>((void*)obj.cookie), who);
 			return;
 #if !LIBBE_BOOTSTRAP
-		case kPackedLargeBinderHandleType: {
+		case BINDER_TYPE_HANDLE: {
 			const sptr<IBinder> b = SLooper::GetStrongProxyForHandle(obj.handle);
 			if (b != NULL) B_INC_STRONG(b, who);
 			return;
 		}
-		case kPackedLargeBinderWeakHandleType: {
+		case BINDER_TYPE_WEAK_HANDLE: {
 			const wptr<IBinder> b = SLooper::GetWeakProxyForHandle(obj.handle);
 			if (b != NULL) b.inc_weak(who);
 			return;
@@ -339,19 +339,19 @@ void acquire_object(const flat_binder_object& obj, const void* who)
 void release_object(const flat_binder_object& obj, const void* who)
 {
 	switch (obj.type) {
-		case kPackedLargeBinderType:
-			if (obj.binder) B_DEC_STRONG(static_cast<SAtom*>(obj.cookie), who);
+		case BINDER_TYPE_BINDER:
+			if (obj.binder) B_DEC_STRONG(static_cast<SAtom*>((void*)obj.cookie), who);
 			return;
-		case kPackedLargeBinderWeakType:
-			if (obj.binder) B_DEC_WEAK(static_cast<SAtom*>(obj.cookie), who);
+		case BINDER_TYPE_WEAK_BINDER:
+			if (obj.binder) B_DEC_WEAK(static_cast<SAtom*>((void*)obj.cookie), who);
 			return;
 #if !LIBBE_BOOTSTRAP
-		case kPackedLargeBinderHandleType: {
+		case BINDER_TYPE_HANDLE: {
 			const sptr<IBinder> b = SLooper::GetStrongProxyForHandle(obj.handle);
 			if (b != NULL) B_DEC_STRONG(b, who);
 			return;
 		}
-		case kPackedLargeBinderWeakHandleType: {
+		case BINDER_TYPE_WEAK_HANDLE: {
 			const wptr<IBinder> b = SLooper::GetWeakProxyForHandle(obj.handle);
 			if (b != NULL) b.dec_weak(who);
 			return;
@@ -364,7 +364,8 @@ void release_object(const flat_binder_object& obj, const void* who)
 
 void flatten_binder(const sptr<IBinder>& binder, flat_binder_object* out)
 {
-	out->length = sizeof(flat_binder_object) - sizeof(small_flat_data);
+	// XXXB
+	//out->length = sizeof(flat_binder_object) - sizeof(small_flat_data);
 	if (binder != NULL) {
 		//printf("Flattening for local %p...\n", binder.ptr());
 		IBinder *local = binder->LocalBinder();
@@ -373,22 +374,23 @@ void flatten_binder(const sptr<IBinder>& binder, flat_binder_object* out)
 			BpBinder *proxy = binder->RemoteBinder();
 			ErrFatalErrorIf(!proxy, "Binder is neither local nor remote");
 			const int32_t handle = proxy->Handle();
-			out->type = kPackedLargeBinderHandleType;
+			out->type = BINDER_TYPE_HANDLE;
 			out->handle = handle;
 		} else {
-			out->type = kPackedLargeBinderType;
+			out->type = BINDER_TYPE_BINDER;
 			out->binder = local;
 			out->cookie = static_cast<SAtom*>(local);
 		}
 	} else {
-		out->type = kPackedLargeBinderType;
+		out->type = BINDER_TYPE_BINDER;
 		out->binder = NULL;
 	}
 }
 
 void flatten_binder(const wptr<IBinder>& binder, flat_binder_object* out)
 {
-	out->length = sizeof(flat_binder_object) - sizeof(small_flat_data);
+	// XXXB
+	//out->length = sizeof(flat_binder_object) - sizeof(small_flat_data);
 	if (binder != NULL) {
 		sptr<IBinder> real = binder.promote();
 		if (real != NULL) {
@@ -397,10 +399,10 @@ void flatten_binder(const wptr<IBinder>& binder, flat_binder_object* out)
 				BpBinder *proxy = real->RemoteBinder();
 				ErrFatalErrorIf(!proxy, "Binder is neither local nor remote");
 				const int32_t handle = proxy->Handle();
-				out->type = kPackedLargeBinderWeakHandleType;
+				out->type = BINDER_TYPE_WEAK_HANDLE;
 				out->handle = handle;
 			} else {
-				out->type = kPackedLargeBinderWeakType;
+				out->type = BINDER_TYPE_WEAK_BINDER;
 				out->binder = binder.get_weak_atom_ptr()->cookie;
 				out->cookie = binder.get_weak_atom_ptr()->atom;
 			}
@@ -418,17 +420,17 @@ void flatten_binder(const wptr<IBinder>& binder, flat_binder_object* out)
 			if (proxy != NULL) {
 				// Found a proxy, so use it.
 				const int32_t handle = proxy->Handle();
-				out->type = kPackedLargeBinderWeakHandleType;
+				out->type = BINDER_TYPE_WEAK_HANDLE;
 				out->handle = handle;
 			} else {
 				// Couldn't cast as a proxy, so assume this is a local binder.
-				out->type = kPackedLargeBinderWeakType;
+				out->type = BINDER_TYPE_WEAK_BINDER;
 				out->binder = weak->cookie;
 				out->cookie = weak->atom;
 			}
 		}
 	} else {
-		out->type = kPackedLargeBinderType;
+		out->type = BINDER_TYPE_BINDER;
 		out->binder = NULL;
 	}
 }
@@ -436,11 +438,11 @@ void flatten_binder(const wptr<IBinder>& binder, flat_binder_object* out)
 status_t unflatten_binder(const flat_binder_object& flat, sptr<IBinder>* out)
 {
 	switch (flat.type) {
-		case kPackedLargeBinderType:
-			*out = static_cast<IBinder*>(flat.binder);
+		case BINDER_TYPE_BINDER:
+			*out = static_cast<IBinder*>((void*)flat.binder);
 			return B_OK;
 #if !LIBBE_BOOTSTRAP
-		case kPackedLargeBinderHandleType:
+		case BINDER_TYPE_HANDLE:
 			*out = SLooper::Process()->GetStrongProxyForHandle(flat.handle);
 			return B_OK;
 #endif
@@ -451,15 +453,15 @@ status_t unflatten_binder(const flat_binder_object& flat, sptr<IBinder>* out)
 status_t unflatten_binder(const flat_binder_object& flat, wptr<IBinder>* out)
 {
 	switch (flat.type) {
-		case kPackedLargeBinderType:
+		case BINDER_TYPE_BINDER:
 		{
-			*out = static_cast<IBinder*>(flat.binder);
+			*out = static_cast<IBinder*>((void*)flat.binder);
 			return B_OK;
 		}
-		case kPackedLargeBinderWeakType:
+		case BINDER_TYPE_WEAK_BINDER:
 		{
 			if (flat.binder != NULL) {
-				SAtom::weak_atom_ptr* weak = static_cast<SAtom*>(flat.cookie)->CreateWeak(flat.binder);
+				SAtom::weak_atom_ptr* weak = static_cast<SAtom*>((void*)flat.cookie)->CreateWeak(flat.binder);
 				out->set_weak_atom_ptr(weak);
 			} else {
 				*out = NULL;
@@ -467,8 +469,8 @@ status_t unflatten_binder(const flat_binder_object& flat, wptr<IBinder>* out)
 			return B_OK;
 		}
 #if !LIBBE_BOOTSTRAP
-		case kPackedLargeBinderHandleType:
-		case kPackedLargeBinderWeakHandleType:
+		case BINDER_TYPE_HANDLE:
+		case BINDER_TYPE_WEAK_HANDLE:
 			*out = SLooper::Process()->GetWeakProxyForHandle(flat.handle);
 			return B_OK;
 #endif

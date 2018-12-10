@@ -41,7 +41,7 @@ Here is a list of the commands that can be sent by a process to the driver, with
     
     <a class="code" href="binder__module_8h.html#a70a49">bcACQUIRE_RESULT</a>,
     
-        int32:  0 <span class="keywordflow">if</span> the last <a class="code" href="binder__module_8h.html#a69a41">brATTEMPT_ACQUIRE</a> was not successful.
+        int32:  0 <span class="keywordflow">if</span> the last <a class="code" href="binder__module_8h.html#a69a41">BR_ATTEMPT_ACQUIRE</a> was not successful.
         Else you have acquired a primary reference on the object.
     
     
@@ -98,9 +98,9 @@ Here is a list of the commands that can be sent by a process to the driver, with
         No parameters.
         Call <span class="keyword">this</span> to have your team start catching root objects
         published by other teams that are spawned outside of the binder.
-        When <span class="keyword">this</span> happens, you will receive a <a class="code" href="binder__module_8h.html#a69a32">brTRANSACTION</a> with the
+        When <span class="keyword">this</span> happens, you will receive a <a class="code" href="binder__module_8h.html#a69a32">BR_TRANSACTION</a> with the
         <a class="code" href="binder__module_8h.html#a68a26">tfRootObject</a> flag set.  (Note that <span class="keyword">this</span> is distinct from receiving
-        normal root objects, which are a <a class="code" href="binder__module_8h.html#a69a33">brREPLY</a>.)
+        normal root objects, which are a <a class="code" href="binder__module_8h.html#a69a33">BR_REPLY</a>.)
     
     
     bcKILL_TEAM
@@ -119,7 +119,7 @@ The most interesting commands here are bcTRANSACTION and bcREPLY, which initiate
 
 <span class="keyword">struct </span><a class="code" href="structbinder__transaction__data.html">binder_transaction_data</a>
 {
-    <span class="comment">// The first two are only used for bcTRANSACTION and brTRANSACTION,</span>
+    <span class="comment">// The first two are only used for bcTRANSACTION and BR_TRANSACTION,</span>
     <span class="comment">// identifying the target and contents of the transaction.</span>
     <span class="keyword">union </span>{
         size_t  handle;     <span class="comment">// target descriptor of command transaction</span>
@@ -148,56 +148,56 @@ The most interesting commands here are bcTRANSACTION and bcREPLY, which initiate
 Thus, to initiate an IPC transaction, you will essentially perform a BINDER_READ_WRITE ioctl with the write buffer containing bcTRANSACTION follewed by a <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a>. In this structure <em>target</em> is the handle of the object that should receive the transaction (we'll talk about handles later), <em>code</em> tells the object what to do when it receives the transaction, <em>priority</em> is the thread priority to run the IPC at, and there is a <em>data</em> buffer containing the transaction data, as well as an (optional) additional <em>offsets</em> buffer of meta-data.<p>
 Given the <em>target</em> handle, the driver determines which process that object lives in and dispatches this transaction to one of the waiting threads in its thread pool (spawning a new thread if needed). That thread is waiting in a BINDER_WRITE_READ ioctl() to the driver, and so returns with its read buffer filled in with the commands it needs to execute. These commands a very similar to the write commands, for the most part corresponding to write operations on the other side:<p>
 <div class="fragment"><pre class="fragment"><span class="keyword">enum</span> <a class="code" href="binder__module_8h.html#a69">BinderDriverReturnProtocol</a> {
-    <a class="code" href="binder__module_8h.html#a69a28">brERROR</a> = -1,
+    <a class="code" href="binder__module_8h.html#a69a28">BR_ERROR</a> = -1,
     
         int32: error code
     
     
-    <a class="code" href="binder__module_8h.html#a69a29">brOK</a> = 0,
+    <a class="code" href="binder__module_8h.html#a69a29">BR_OK</a> = 0,
     <a class="code" href="binder__module_8h.html#a69a30">brTIMEOUT</a>,
     <a class="code" href="binder__module_8h.html#a69a31">brWAKEUP</a>,
         No parameters! 
     
-    <a class="code" href="binder__module_8h.html#a69a32">brTRANSACTION</a>,
-    <a class="code" href="binder__module_8h.html#a69a33">brREPLY</a>,
+    <a class="code" href="binder__module_8h.html#a69a32">BR_TRANSACTION</a>,
+    <a class="code" href="binder__module_8h.html#a69a33">BR_REPLY</a>,
     
         <a class="code" href="structbinder__transaction__data.html">binder_transaction_data</a>: the received command.
     
     
-    <a class="code" href="binder__module_8h.html#a69a34">brACQUIRE_RESULT</a>,
+    <a class="code" href="binder__module_8h.html#a69a34">BR_ACQUIRE_RESULT</a>,
     
         int32: 0 <span class="keywordflow">if</span> the last <a class="code" href="binder__module_8h.html#a70a58">bcATTEMPT_ACQUIRE</a> was not successful.
         Else the remote object has acquired a primary reference.
     
     
-    <a class="code" href="binder__module_8h.html#a69a35">brDEAD_REPLY</a>,
+    <a class="code" href="binder__module_8h.html#a69a35">BR_DEAD_REPLY</a>,
     
         The target of the last transaction (either a <a class="code" href="binder__module_8h.html#a70a47">bcTRANSACTION</a> or
         a <a class="code" href="binder__module_8h.html#a70a58">bcATTEMPT_ACQUIRE</a>) is no longer with us.  No parameters.
     
     
-    <a class="code" href="binder__module_8h.html#a69a36">brTRANSACTION_COMPLETE</a>,
+    <a class="code" href="binder__module_8h.html#a69a36">BR_TRANSACTION_COMPLETE</a>,
     
         No parameters... always refers to the last transaction requested
         (including replies).  Note that <span class="keyword">this</span> will be sent even <span class="keywordflow">for</span> asynchronous
         transactions.
     
     
-    <a class="code" href="binder__module_8h.html#a69a37">brINCREFS</a>,
-    <a class="code" href="binder__module_8h.html#a69a38">brACQUIRE</a>,
-    <a class="code" href="binder__module_8h.html#a69a39">brRELEASE</a>,
-    <a class="code" href="binder__module_8h.html#a69a40">brDECREFS</a>,
+    <a class="code" href="binder__module_8h.html#a69a37">BR_INCREFS</a>,
+    <a class="code" href="binder__module_8h.html#a69a38">BR_ACQUIRE</a>,
+    <a class="code" href="binder__module_8h.html#a69a39">BR_RELEASE</a>,
+    <a class="code" href="binder__module_8h.html#a69a40">BR_DECREFS</a>,
     
         <span class="keywordtype">void</span> *: ptr to binder
     
     
-    <a class="code" href="binder__module_8h.html#a69a41">brATTEMPT_ACQUIRE</a>,
+    <a class="code" href="binder__module_8h.html#a69a41">BR_ATTEMPT_ACQUIRE</a>,
     
         int32:  priority
         <span class="keywordtype">void</span> *: ptr to binder
     
     
-    <a class="code" href="binder__module_8h.html#a69a42">brEVENT_OCCURRED</a>,
+    <a class="code" href="binder__module_8h.html#a69a42">BR_EVENT_OCCURRED</a>,
     
         This is returned when the bcSET_NEXT_EVENT_TIME has elapsed.
         At <span class="keyword">this</span> point the next event time is set to <a class="code" href="group__CoreSupportUtilities.html#ga116">B_INFINITE_TIMEOUT</a>,
@@ -205,13 +205,13 @@ Given the <em>target</em> handle, the driver determines which process that objec
         have another event pending.
     
     
-    <a class="code" href="binder__module_8h.html#a69a45">brFINISHED</a>
+    <a class="code" href="binder__module_8h.html#a69a45">BR_FINISHED</a>
 };
 </pre></div><p>
-Continuing our example, the receiving thread will come back with a brTRANSACTION command at the end of its buffer. This command uses the same <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a> structure that was used to send the data, basically containing the same information that was sent but now available in the local process space.<p>
+Continuing our example, the receiving thread will come back with a BR_TRANSACTION command at the end of its buffer. This command uses the same <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a> structure that was used to send the data, basically containing the same information that was sent but now available in the local process space.<p>
 The recipient, in user space will then hand this transaction over to the target object for it to execute and return its result. Upon getting the result, a new write buffer is created containing the bcREPLY reply command with a <a class="el" href="structbinder__transaction__data.html">binder_transaction_data</a> structure containing the resulting data. This is returned with a BINDER_WRITE_READ ioctl() on the driver, sending the reply back to the original process and leaving the thread waiting for the next transaction to perform.<p>
-The original thread finally returns back from its own BINDER_WRITE_READ with a brREPLY command containing the reply data.<p>
-Note that the original thread may also receive brTRANSACTION commands while it is waiting for a reply. This represents a recursion across processes  the receiving thread making a call on to an object back in the original process. It is the responsibility of the driver to keep track of all active transactions, so it can dispatch transactions to the correct thread when recursion happens.<h3><a class="anchor" name="ObjectMappingAndReferencing">
+The original thread finally returns back from its own BINDER_WRITE_READ with a BR_REPLY command containing the reply data.<p>
+Note that the original thread may also receive BR_TRANSACTION commands while it is waiting for a reply. This represents a recursion across processes  the receiving thread making a call on to an object back in the original process. It is the responsibility of the driver to keep track of all active transactions, so it can dispatch transactions to the correct thread when recursion happens.<h3><a class="anchor" name="ObjectMappingAndReferencing">
 Object Mapping and Referencing</a></h3>
 One of the important responsibilities of the driver is to perform mapping of objects from one process to another. This is key to both the communication mechanism (targetting and referencing objects) as well as the capability model (only allowing a particular process to perform operations on remote objects that it has been explicitly given knowledge about).<p>
 There are two distinct forms of an object reference: as an address in a processes's memory space, or as an abstract 32-bit handle. These representations are mutually exclusive: <b>all</b> references in a process to objects local to that process are in the form of an address, while all references to objects in another process are always in the form of a handle.<p>

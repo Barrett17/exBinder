@@ -15,7 +15,7 @@
 <a name="l00111"></a>00111     
 <a name="l00112"></a>00112     <a class="code" href="binder__module_8h.html#a70a49">bcACQUIRE_RESULT</a>,
 <a name="l00113"></a>00113     <span class="comment">/*</span>
-<a name="l00114"></a>00114 <span class="comment">        int32:  0 if the last brATTEMPT_ACQUIRE was not successful.</span>
+<a name="l00114"></a>00114 <span class="comment">        int32:  0 if the last BR_ATTEMPT_ACQUIRE was not successful.</span>
 <a name="l00115"></a>00115 <span class="comment">        Else you have acquired a primary reference on the object.</span>
 <a name="l00116"></a>00116 <span class="comment">    */</span>
 <a name="l00117"></a>00117     
@@ -72,9 +72,9 @@
 <a name="l00168"></a>00168 <span class="comment">        No parameters.</span>
 <a name="l00169"></a>00169 <span class="comment">        Call this to have your team start catching root objects</span>
 <a name="l00170"></a>00170 <span class="comment">        published by other teams that are spawned outside of the binder.</span>
-<a name="l00171"></a>00171 <span class="comment">        When this happens, you will receive a brTRANSACTION with the</span>
+<a name="l00171"></a>00171 <span class="comment">        When this happens, you will receive a BR_TRANSACTION with the</span>
 <a name="l00172"></a>00172 <span class="comment">        tfRootObject flag set.  (Note that this is distinct from receiving</span>
-<a name="l00173"></a>00173 <span class="comment">        normal root objects, which are a brREPLY.)</span>
+<a name="l00173"></a>00173 <span class="comment">        normal root objects, which are a BR_REPLY.)</span>
 <a name="l00174"></a>00174 <span class="comment">    */</span>
 <a name="l00175"></a>00175     
 <a name="l00176"></a>00176     bcKILL_TEAM
@@ -98,7 +98,7 @@
 <a name="l00194"></a>00194 
 <a name="l00195"></a>00195 <span class="keyword">struct </span><a class="code" href="structbinder__transaction__data.html">binder_transaction_data</a>
 <a name="l00196"></a>00196 {
-<a name="l00197"></a>00197     <span class="comment">// The first two are only used for bcTRANSACTION and brTRANSACTION,</span>
+<a name="l00197"></a>00197     <span class="comment">// The first two are only used for bcTRANSACTION and BR_TRANSACTION,</span>
 <a name="l00198"></a>00198     <span class="comment">// identifying the target and contents of the transaction.</span>
 <a name="l00199"></a>00199     <span class="keyword">union </span>{
 <a name="l00200"></a>00200         size_t  <a class="code" href="structbinder__transaction__data.html#o6">handle</a>;     <span class="comment">// target descriptor of command transaction</span>
@@ -144,56 +144,56 @@
 <a name="l00240"></a>00240 
 <a name="l00241"></a>00241 @code
 <a name="l00242"></a>00242 enum <a class="code" href="binder__module_8h.html#a69">BinderDriverReturnProtocol</a> {
-<a name="l00243"></a>00243     <a class="code" href="binder__module_8h.html#a69a28">brERROR</a> = -1,
+<a name="l00243"></a>00243     <a class="code" href="binder__module_8h.html#a69a28">BR_ERROR</a> = -1,
 <a name="l00244"></a>00244     <span class="comment">/*</span>
 <a name="l00245"></a>00245 <span class="comment">        int32: error code</span>
 <a name="l00246"></a>00246 <span class="comment">    */</span>
 <a name="l00247"></a>00247     
-<a name="l00248"></a>00248     <a class="code" href="binder__module_8h.html#a69a29">brOK</a> = 0,
+<a name="l00248"></a>00248     <a class="code" href="binder__module_8h.html#a69a29">BR_OK</a> = 0,
 <a name="l00249"></a>00249     <a class="code" href="binder__module_8h.html#a69a30">brTIMEOUT</a>,
 <a name="l00250"></a>00250     <a class="code" href="binder__module_8h.html#a69a31">brWAKEUP</a>,
 <a name="l00251"></a>00251     <span class="comment">/*  No parameters! */</span>
 <a name="l00252"></a>00252     
-<a name="l00253"></a>00253     <a class="code" href="binder__module_8h.html#a69a32">brTRANSACTION</a>,
-<a name="l00254"></a>00254     <a class="code" href="binder__module_8h.html#a69a33">brREPLY</a>,
+<a name="l00253"></a>00253     <a class="code" href="binder__module_8h.html#a69a32">BR_TRANSACTION</a>,
+<a name="l00254"></a>00254     <a class="code" href="binder__module_8h.html#a69a33">BR_REPLY</a>,
 <a name="l00255"></a>00255     <span class="comment">/*</span>
 <a name="l00256"></a>00256 <span class="comment">        binder_transaction_data: the received command.</span>
 <a name="l00257"></a>00257 <span class="comment">    */</span>
 <a name="l00258"></a>00258     
-<a name="l00259"></a>00259     <a class="code" href="binder__module_8h.html#a69a34">brACQUIRE_RESULT</a>,
+<a name="l00259"></a>00259     <a class="code" href="binder__module_8h.html#a69a34">BR_ACQUIRE_RESULT</a>,
 <a name="l00260"></a>00260     <span class="comment">/*</span>
 <a name="l00261"></a>00261 <span class="comment">        int32: 0 if the last bcATTEMPT_ACQUIRE was not successful.</span>
 <a name="l00262"></a>00262 <span class="comment">        Else the remote object has acquired a primary reference.</span>
 <a name="l00263"></a>00263 <span class="comment">    */</span>
 <a name="l00264"></a>00264     
-<a name="l00265"></a>00265     <a class="code" href="binder__module_8h.html#a69a35">brDEAD_REPLY</a>,
+<a name="l00265"></a>00265     <a class="code" href="binder__module_8h.html#a69a35">BR_DEAD_REPLY</a>,
 <a name="l00266"></a>00266     <span class="comment">/*</span>
 <a name="l00267"></a>00267 <span class="comment">        The target of the last transaction (either a bcTRANSACTION or</span>
 <a name="l00268"></a>00268 <span class="comment">        a bcATTEMPT_ACQUIRE) is no longer with us.  No parameters.</span>
 <a name="l00269"></a>00269 <span class="comment">    */</span>
 <a name="l00270"></a>00270     
-<a name="l00271"></a>00271     <a class="code" href="binder__module_8h.html#a69a36">brTRANSACTION_COMPLETE</a>,
+<a name="l00271"></a>00271     <a class="code" href="binder__module_8h.html#a69a36">BR_TRANSACTION_COMPLETE</a>,
 <a name="l00272"></a>00272     <span class="comment">/*</span>
 <a name="l00273"></a>00273 <span class="comment">        No parameters... always refers to the last transaction requested</span>
 <a name="l00274"></a>00274 <span class="comment">        (including replies).  Note that this will be sent even for asynchronous</span>
 <a name="l00275"></a>00275 <span class="comment">        transactions.</span>
 <a name="l00276"></a>00276 <span class="comment">    */</span>
 <a name="l00277"></a>00277     
-<a name="l00278"></a>00278     <a class="code" href="binder__module_8h.html#a69a37">brINCREFS</a>,
-<a name="l00279"></a>00279     <a class="code" href="binder__module_8h.html#a69a38">brACQUIRE</a>,
-<a name="l00280"></a>00280     <a class="code" href="binder__module_8h.html#a69a39">brRELEASE</a>,
-<a name="l00281"></a>00281     <a class="code" href="binder__module_8h.html#a69a40">brDECREFS</a>,
+<a name="l00278"></a>00278     <a class="code" href="binder__module_8h.html#a69a37">BR_INCREFS</a>,
+<a name="l00279"></a>00279     <a class="code" href="binder__module_8h.html#a69a38">BR_ACQUIRE</a>,
+<a name="l00280"></a>00280     <a class="code" href="binder__module_8h.html#a69a39">BR_RELEASE</a>,
+<a name="l00281"></a>00281     <a class="code" href="binder__module_8h.html#a69a40">BR_DECREFS</a>,
 <a name="l00282"></a>00282     <span class="comment">/*</span>
 <a name="l00283"></a>00283 <span class="comment">        void *: ptr to binder</span>
 <a name="l00284"></a>00284 <span class="comment">    */</span>
 <a name="l00285"></a>00285     
-<a name="l00286"></a>00286     <a class="code" href="binder__module_8h.html#a69a41">brATTEMPT_ACQUIRE</a>,
+<a name="l00286"></a>00286     <a class="code" href="binder__module_8h.html#a69a41">BR_ATTEMPT_ACQUIRE</a>,
 <a name="l00287"></a>00287     <span class="comment">/*</span>
 <a name="l00288"></a>00288 <span class="comment">        int32:  priority</span>
 <a name="l00289"></a>00289 <span class="comment">        void *: ptr to binder</span>
 <a name="l00290"></a>00290 <span class="comment">    */</span>
 <a name="l00291"></a>00291     
-<a name="l00292"></a>00292     <a class="code" href="binder__module_8h.html#a69a42">brEVENT_OCCURRED</a>,
+<a name="l00292"></a>00292     <a class="code" href="binder__module_8h.html#a69a42">BR_EVENT_OCCURRED</a>,
 <a name="l00293"></a>00293     <span class="comment">/*</span>
 <a name="l00294"></a>00294 <span class="comment">        This is returned when the bcSET_NEXT_EVENT_TIME has elapsed.</span>
 <a name="l00295"></a>00295 <span class="comment">        At this point the next event time is set to B_INFINITE_TIMEOUT,</span>
@@ -201,12 +201,12 @@
 <a name="l00297"></a>00297 <span class="comment">        have another event pending.</span>
 <a name="l00298"></a>00298 <span class="comment">    */</span>
 <a name="l00299"></a>00299     
-<a name="l00300"></a>00300     <a class="code" href="binder__module_8h.html#a69a45">brFINISHED</a>
+<a name="l00300"></a>00300     <a class="code" href="binder__module_8h.html#a69a45">BR_FINISHED</a>
 <a name="l00301"></a>00301 };
 <a name="l00302"></a>00302 <span class="keyword">@end</span>code
 <a name="l00303"></a>00303 
 <a name="l00304"></a>00304 Continuing our example, the receiving thread will come back with a
-<a name="l00305"></a>00305 <a class="code" href="binder__module_8h.html#a69a32">brTRANSACTION</a> command at the end of its buffer.  This command uses the
+<a name="l00305"></a>00305 <a class="code" href="binder__module_8h.html#a69a32">BR_TRANSACTION</a> command at the end of its buffer.  This command uses the
 <a name="l00306"></a>00306 same <a class="code" href="structbinder__transaction__data.html">binder_transaction_data</a> structure that was used to send the data,
 <a name="l00307"></a>00307 basically containing the same information that was sent but now available
 <a name="l00308"></a>00308 in the local process space.
@@ -220,9 +220,9 @@
 <a name="l00316"></a>00316 waiting for the next transaction to perform.
 <a name="l00317"></a>00317 
 <a name="l00318"></a>00318 The original thread finally returns back from its own <a class="code" href="binder__module_8h.html#a2">BINDER_WRITE_READ</a>
-<a name="l00319"></a>00319 with a <a class="code" href="binder__module_8h.html#a69a33">brREPLY</a> command containing the reply data.
+<a name="l00319"></a>00319 with a <a class="code" href="binder__module_8h.html#a69a33">BR_REPLY</a> command containing the reply data.
 <a name="l00320"></a>00320 
-<a name="l00321"></a>00321 Note that the original thread may also receive <a class="code" href="binder__module_8h.html#a69a32">brTRANSACTION</a> commands while
+<a name="l00321"></a>00321 Note that the original thread may also receive <a class="code" href="binder__module_8h.html#a69a32">BR_TRANSACTION</a> commands while
 <a name="l00322"></a>00322 it is waiting for a reply.  This represents a recursion across processes &amp;mdash;
 <a name="l00323"></a>00323 the receiving thread making a call on to an object back in the original
 <a name="l00324"></a>00324 process.  It is the responsibility of the driver to keep track of all

@@ -163,20 +163,20 @@ status_t SLooper::Loop()
 
 #if BINDER_DEBUG_MSGS
 static const char *inString[] = {
-	"brOK",
+	"BR_OK",
 	"brTIMEOUT",
 	"brWAKEUP",
-	"brTRANSACTION",
-	"brREPLY",
-	"brACQUIRE_RESULT",
-	"brTRANSACTION_COMPLETE",
-	"brINCREFS",
-	"brACQUIRE",
-	"brATTEMPT_ACQUIRE",
-	"brRELEASE",
-	"brDECREFS",
-	"brEVENT_OCCURRED",
-	"brFINISHED"
+	"BR_TRANSACTION",
+	"BR_REPLY",
+	"BR_ACQUIRE_RESULT",
+	"BR_TRANSACTION_COMPLETE",
+	"BR_INCREFS",
+	"BR_ACQUIRE",
+	"BR_ATTEMPT_ACQUIRE",
+	"BR_RELEASE",
+	"BR_DECREFS",
+	"BR_EVENT_OCCURRED",
+	"BR_FINISHED"
 };
 #endif
 
@@ -214,13 +214,13 @@ SLooper::_HandleCommand(int32_t cmd)
 			<< " got command: " << cmd << " " << inString[cmd] << endl;
 #endif
 	switch (cmd) {
-		case brERROR: {
+		case BR_ERROR: {
 			result = m_in.ReadInt32();
 			berr << "*** Binder driver error during read: " << strerror(result) << endl;
 		} break;
-		case brOK: {
+		case BR_OK: {
 		} break;
-		case brACQUIRE: {
+		case BR_ACQUIRE: {
 			ptr = (BBinder*)m_in.ReadInt32();
 			#if BINDER_REFCOUNT_MSGS
 			bout << "Calling IncStrong() on " << ptr << " " << typeid(*ptr).name()
@@ -228,7 +228,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			#endif
 			ptr->IncStrong(reinterpret_cast<void*>(m_teamID));
 		} break;
-		case brRELEASE: {
+		case BR_RELEASE: {
 			ptr = (BBinder*)m_in.ReadInt32();
 			#if BINDER_REFCOUNT_MSGS
 			bout << "Calling DecStrong() on " << ptr << " " << typeid(*ptr).name()
@@ -243,7 +243,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			if (r > 1) ptr->Report(bout);
 			#endif
 		} break;
-		case brATTEMPT_ACQUIRE: {
+		case BR_ATTEMPT_ACQUIRE: {
 			m_priority = m_in.ReadInt32();
 			ptr = (BBinder*)m_in.ReadInt32();
 			#if BINDER_REFCOUNT_MSGS
@@ -257,7 +257,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			bout << "AttemptIncStrong() result on " << ptr << ": " << success << endl;
 			#endif
 		} break;
-		case brINCREFS: {
+		case BR_INCREFS: {
 			ptr = (BBinder*)m_in.ReadInt32();
 			#if BINDER_REFCOUNT_MSGS
 			bout << "Calling IncWeak() on " << ptr << " " << typeid(*ptr).name()
@@ -265,7 +265,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			#endif
 			ptr->IncWeak(reinterpret_cast<void*>(m_teamID));
 		} break;
-		case brDECREFS: {
+		case BR_DECREFS: {
 			ptr = (BBinder*)m_in.ReadInt32();
 			#if BINDER_REFCOUNT_MSGS
 			bout << "Calling DecWeak() on " << ptr << " " << typeid(*ptr).name()
@@ -280,7 +280,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			if (r > 1) ptr->Report(bout);
 			#endif
 		} break;
-		case brTRANSACTION: {
+		case BR_TRANSACTION: {
 			binder_transaction_data tr;
 			ssize_t amt = m_in.Read(&tr, sizeof(tr));
 			if (amt < (ssize_t)sizeof(tr)) {
@@ -326,13 +326,13 @@ SLooper::_HandleCommand(int32_t cmd)
 			buffer.Free();
 			
 		} break;
-		case brEVENT_OCCURRED: {
+		case BR_EVENT_OCCURRED: {
 			m_priority = m_in.ReadInt32();
 			if (m_team != NULL) {
 				m_team->DispatchMessage(this);
 			}
 		} break;
-		case brFINISHED: {
+		case BR_FINISHED: {
 			result = B_IO_ERROR;
 		} break;
 		default: {
@@ -361,15 +361,15 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 #if BINDER_DEBUG_MSGS
 		berr << "_WaitForCompletion got : " << cmd << " " << inString[cmd] << endl;
 #endif
-		if (cmd == brTRANSACTION_COMPLETE) {
+		if (cmd == BR_TRANSACTION_COMPLETE) {
 			if (!reply && !acquireResult) break;
-		} else if (cmd == brDEAD_REPLY) {
+		} else if (cmd == BR_DEAD_REPLY) {
 			// The target is gone!
 			err = B_BINDER_DEAD;
 			if (acquireResult) *acquireResult = B_BINDER_DEAD;
 			else if (reply) reply->Reference(NULL, B_BINDER_DEAD);
 			break;
-		} else if (cmd == brACQUIRE_RESULT) {
+		} else if (cmd == BR_ACQUIRE_RESULT) {
 			int32_t result = m_in.ReadInt32();
 #if BINDER_BUFFER_MSGS
 			bout << "Result of bcATTEMPT_ACQUIRE: " << result << endl;
@@ -378,8 +378,8 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 				*acquireResult = result ? B_OK : B_NOT_ALLOWED;
 				break;
 			}
-			ErrFatalError("Unexpected brACQUIRE_RESULT!");
-		} else if (cmd == brREPLY) {
+			ErrFatalError("Unexpected BR_ACQUIRE_RESULT!");
+		} else if (cmd == BR_REPLY) {
 			binder_transaction_data tr;
 			ssize_t amt = m_in.Read(&tr, sizeof(tr));
 			if (amt < (ssize_t)sizeof(tr)) {

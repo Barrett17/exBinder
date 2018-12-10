@@ -65,23 +65,23 @@ static atomic_int g_openBuffers(0);
 
 #if BINDER_DEBUG_MSGS
 static const char *inString[] = {
-	"brOK",
+	"BR_OK",
 	"brTIMEOUT",
 	"brWAKEUP",
-	"brTRANSACTION",
-	"brREPLY",
-	"brACQUIRE_RESULT",
-	"brDEAD_REPLY",
-	"brTRANSACTION_COMPLETE",
-	"brINCREFS",
-	"brACQUIRE",
-	"brRELEASE",
-	"brDECREFS",
-	"brATTEMPT_ACQUIRE",
-	"brEVENT_OCCURRED",
-	"brNOOP",
-	"brSPAWN_LOOPER",
-	"brFINISHED"
+	"BR_TRANSACTION",
+	"BR_REPLY",
+	"BR_ACQUIRE_RESULT",
+	"BR_DEAD_REPLY",
+	"BR_TRANSACTION_COMPLETE",
+	"BR_INCREFS",
+	"BR_ACQUIRE",
+	"BR_RELEASE",
+	"BR_DECREFS",
+	"BR_ATTEMPT_ACQUIRE",
+	"BR_EVENT_OCCURRED",
+	"BR_NOOP",
+	"BR_SPAWN_LOOPER",
+	"BR_FINISHED"
 };
 #endif
 
@@ -811,25 +811,25 @@ SLooper::_HandleCommand(int32_t cmd)
 	status_t result = B_OK;
 	
 #if BINDER_DEBUG_MSGS
-	if (cmd != brNOOP)
+	if (cmd != BR_NOOP)
 		berr	<< "Thread " << this << SPrintf(" in %d ", getpid())
 				<< " got command: " << cmd << " " << inString[cmd] << endl;
 #endif
 	switch (cmd) {
-		case brERROR: {
+		case BR_ERROR: {
 			result = m_in.ReadInt32();
 			berr << "*** Binder driver error during read: " << strerror(result) << endl;
 		} break;
-		case brOK: {
+		case BR_OK: {
 		} break;
-		case brACQUIRE: {
+		case BR_ACQUIRE: {
 			ptr = (BBinder*)m_in.ReadInt64();
 			atom = (SAtom*)m_in.ReadInt64();
-			//fprintf(stderr, "brACQUIRE: ptr=%p, atom=%p\n", ptr, atom);
+			//fprintf(stderr, "BR_ACQUIRE: ptr=%p, atom=%p\n", ptr, atom);
 			//if (ptr != atom) {
 			//	fprintf(stderr, "Failing with bad cookie: got %p, expected %p, object %p\n", atom, static_cast<SAtom*>(ptr), ptr);
 			//}
-			DbgOnlyFatalErrorIf(ptr != atom, "SLooper: Driver brACQUIRE returned Binder address with incorrect SAtom cookie!");
+			DbgOnlyFatalErrorIf(ptr != atom, "SLooper: Driver BR_ACQUIRE returned Binder address with incorrect SAtom cookie!");
 			#if BINDER_REFCOUNT_MSGS
 			berr << "Calling IncStrong() on " << ptr << " " << typeid(*ptr).name()
 				<< " (atom " << atom << ")" << endl;
@@ -845,14 +845,14 @@ SLooper::_HandleCommand(int32_t cmd)
 			m_out.WriteInt64((int64_t)ptr);
 			m_out.WriteInt64((int64_t)atom);
 		} break;
-		case brRELEASE: {
+		case BR_RELEASE: {
 			ptr = (BBinder*)m_in.ReadInt64();
 			atom = (SAtom*)m_in.ReadInt64();
-			//fprintf(stderr, "brRELEASE: ptr=%p, atom=%p\n", ptr, atom);
+			//fprintf(stderr, "BR_RELEASE: ptr=%p, atom=%p\n", ptr, atom);
 			//if (ptr != atom) {
 			//	fprintf(stderr, "Failing with bad cookie: got %p, expected %p, object %p\n", atom, static_cast<SAtom*>(ptr), ptr);
 			//}
-			DbgOnlyFatalErrorIf(ptr != atom, "SLooper: Driver brRELEASE returned Binder address with incorrect SAtom cookie!");
+			DbgOnlyFatalErrorIf(ptr != atom, "SLooper: Driver BR_RELEASE returned Binder address with incorrect SAtom cookie!");
 			#if BINDER_REFCOUNT_MSGS
 			berr << "Calling DecStrong() on " << ptr << " " << typeid(*ptr).name()
 				<< " (atom " << atom << ")" << endl;
@@ -863,7 +863,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			#endif
 			atom->DecStrong(reinterpret_cast<void*>(m_teamID));
 		} break;
-		case brATTEMPT_ACQUIRE: {
+		case BR_ATTEMPT_ACQUIRE: {
 			m_priority = m_in.ReadInt32();
 			ptr = (BBinder*)m_in.ReadInt64();
 			atom = (SAtom*)m_in.ReadInt64();
@@ -872,18 +872,18 @@ SLooper::_HandleCommand(int32_t cmd)
 				<< " (atom " << atom << ")" << endl;
 			#endif
 			const bool success = atom->AttemptIncStrong(reinterpret_cast<void*>(m_teamID));
-			//fprintf(stderr, "brATTEMPT_ACQUIRE: ptr=%p, atom=%p\n", ptr, atom);
+			//fprintf(stderr, "BR_ATTEMPT_ACQUIRE: ptr=%p, atom=%p\n", ptr, atom);
 			//if (success && ptr != atom) {
 			//	fprintf(stderr, "Failing with bad cookie: got %p, expected %p, object %p\n", atom, static_cast<SAtom*>(ptr), ptr);
 			//}
-			DbgOnlyFatalErrorIf(success && ptr != atom, "SLooper: Driver brATTEMPT_ACQUIRE returned Binder address with incorrect SAtom cookie!");
+			DbgOnlyFatalErrorIf(success && ptr != atom, "SLooper: Driver BR_ATTEMPT_ACQUIRE returned Binder address with incorrect SAtom cookie!");
 			m_out.WriteInt32(bcACQUIRE_RESULT);
 			m_out.WriteInt32((int32_t)success);
 			#if BINDER_REFCOUNT_RESULT_MSGS
 			berr << "AttemptIncStrong() result on " << ptr << ": " << success << endl;
 			#endif
 		} break;
-		case brINCREFS: {
+		case BR_INCREFS: {
 			ptr = (BBinder*)m_in.ReadInt64();
 			atom = (SAtom*)m_in.ReadInt64();
 			#if BINDER_REFCOUNT_MSGS
@@ -901,7 +901,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			m_out.WriteInt64((int64_t)ptr);
 			m_out.WriteInt64((int64_t)atom);
 		} break;
-		case brDECREFS: {
+		case BR_DECREFS: {
 			ptr = (BBinder*)m_in.ReadInt64();
 			atom = (SAtom*)m_in.ReadInt64();
 			#if BINDER_REFCOUNT_MSGS
@@ -914,7 +914,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			#endif
 			atom->DecWeak(reinterpret_cast<void*>(m_teamID));
 		} break;
-		case brTRANSACTION: {
+		case BR_TRANSACTION: {
 			binder_transaction_data tr;
 			ssize_t amt = m_in.Read(&tr, sizeof(tr));
 			if (amt < (ssize_t)sizeof(tr)) {
@@ -923,7 +923,7 @@ SLooper::_HandleCommand(int32_t cmd)
 			}
 			
 			SParcel buffer(tr.data.ptr.buffer, tr.data_size, _BufferFree, this);
-			// syslog(LOG_DEBUG, "brTRANSACTION data: %d, offsets: %d\n", tr.data_size, tr.offsets_size);
+			// syslog(LOG_DEBUG, "BR_TRANSACTION data: %d, offsets: %d\n", tr.data_size, tr.offsets_size);
 			buffer.SetBinderOffsets(tr.data.ptr.offsets, tr.offsets_size, false);
 			m_priority = tr.priority;
 			
@@ -987,18 +987,18 @@ SLooper::_HandleCommand(int32_t cmd)
 			buffer.Free();
 			
 		} break;
-		case brEVENT_OCCURRED: {
+		case BR_EVENT_OCCURRED: {
 			m_priority = m_in.ReadInt32();
 			if (m_team != NULL) {
 				m_team->DispatchMessage(this);
 			}
 		} break;
-		case brFINISHED: {
+		case BR_FINISHED: {
 			result = -ETIMEDOUT;
 		} break;
-		case brNOOP: {
+		case BR_NOOP: {
 		} break;
-		case brSPAWN_LOOPER: {
+		case BR_SPAWN_LOOPER: {
 			SpawnLooper();
 		} break;
 		default: {
@@ -1031,18 +1031,18 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 		cmd = m_in.ReadInt32();
 		
 #if BINDER_DEBUG_MSGS
-		if (cmd != brNOOP)
+		if (cmd != BR_NOOP)
 			berr << "Thread " << this << SPrintf(" in %d ", getpid()) << " _WaitForCompletion got : " << cmd << " " << inString[cmd] << endl;
 #endif
-		if (cmd == brTRANSACTION_COMPLETE) {
+		if (cmd == BR_TRANSACTION_COMPLETE) {
 			if (!reply && !acquireResult) break;
-		} else if (cmd == brDEAD_REPLY) {
+		} else if (cmd == BR_DEAD_REPLY) {
 			// The target is gone!
 			err = B_BINDER_DEAD;
 			if (acquireResult) *acquireResult = B_BINDER_DEAD;
 			else if (reply) reply->Reference(NULL, B_BINDER_DEAD);
 			break;
-		} else if (cmd == brACQUIRE_RESULT) {
+		} else if (cmd == BR_ACQUIRE_RESULT) {
 			int32_t result = m_in.ReadInt32();
 #if BINDER_BUFFER_MSGS
 			berr << "Result of bcATTEMPT_ACQUIRE: " << result << endl;
@@ -1051,8 +1051,8 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 				*acquireResult = result ? B_OK : B_NOT_ALLOWED;
 				break;
 			}
-			ErrFatalError("Unexpected brACQUIRE_RESULT!");
-		} else if (cmd == brREPLY) {
+			ErrFatalError("Unexpected BR_ACQUIRE_RESULT!");
+		} else if (cmd == BR_REPLY) {
 			binder_transaction_data tr;
 			ssize_t amt = m_in.Read(&tr, sizeof(tr));
 			if (amt < (ssize_t)sizeof(tr)) {
@@ -1075,7 +1075,7 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 				berr	<< "Creating reply buffer for " << tr.data.ptr.buffer
 						<< ", now have " << (atomic_fetch_add(&g_openBuffers, 1)+1)
 						<< " open." << endl;
-				berr << "brREPLY: " << *reply << endl;
+				berr << "BR_REPLY: " << *reply << endl;
 #endif
 			} else {
 #if BINDER_BUFFER_MSGS

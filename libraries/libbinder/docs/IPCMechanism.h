@@ -111,7 +111,7 @@ enum BinderDriverCommandProtocol {
 	
 	bcACQUIRE_RESULT,
 	/*
-		int32:  0 if the last brATTEMPT_ACQUIRE was not successful.
+		int32:  0 if the last BR_ATTEMPT_ACQUIRE was not successful.
 		Else you have acquired a primary reference on the object.
 	*/
 	
@@ -168,9 +168,9 @@ enum BinderDriverCommandProtocol {
 		No parameters.
 		Call this to have your team start catching root objects
 		published by other teams that are spawned outside of the binder.
-		When this happens, you will receive a brTRANSACTION with the
+		When this happens, you will receive a BR_TRANSACTION with the
 		tfRootObject flag set.  (Note that this is distinct from receiving
-		normal root objects, which are a brREPLY.)
+		normal root objects, which are a BR_REPLY.)
 	*/
 	
 	bcKILL_TEAM
@@ -194,7 +194,7 @@ enum transaction_flags {
 
 struct binder_transaction_data
 {
-	// The first two are only used for bcTRANSACTION and brTRANSACTION,
+	// The first two are only used for bcTRANSACTION and BR_TRANSACTION,
 	// identifying the target and contents of the transaction.
 	union {
 		size_t	handle;		// target descriptor of command transaction
@@ -240,56 +240,56 @@ most part corresponding to write operations on the other side:
 
 @code
 enum BinderDriverReturnProtocol {
-	brERROR = -1,
+	BR_ERROR = -1,
 	/*
 		int32: error code
 	*/
 	
-	brOK = 0,
+	BR_OK = 0,
 	brTIMEOUT,
 	brWAKEUP,
 	/*	No parameters! */
 	
-	brTRANSACTION,
-	brREPLY,
+	BR_TRANSACTION,
+	BR_REPLY,
 	/*
 		binder_transaction_data: the received command.
 	*/
 	
-	brACQUIRE_RESULT,
+	BR_ACQUIRE_RESULT,
 	/*
 		int32: 0 if the last bcATTEMPT_ACQUIRE was not successful.
 		Else the remote object has acquired a primary reference.
 	*/
 	
-	brDEAD_REPLY,
+	BR_DEAD_REPLY,
 	/*
 		The target of the last transaction (either a bcTRANSACTION or
 		a bcATTEMPT_ACQUIRE) is no longer with us.  No parameters.
 	*/
 	
-	brTRANSACTION_COMPLETE,
+	BR_TRANSACTION_COMPLETE,
 	/*
 		No parameters... always refers to the last transaction requested
 		(including replies).  Note that this will be sent even for asynchronous
 		transactions.
 	*/
 	
-	brINCREFS,
-	brACQUIRE,
-	brRELEASE,
-	brDECREFS,
+	BR_INCREFS,
+	BR_ACQUIRE,
+	BR_RELEASE,
+	BR_DECREFS,
 	/*
 		void *:	ptr to binder
 	*/
 	
-	brATTEMPT_ACQUIRE,
+	BR_ATTEMPT_ACQUIRE,
 	/*
 		int32:	priority
 		void *: ptr to binder
 	*/
 	
-	brEVENT_OCCURRED,
+	BR_EVENT_OCCURRED,
 	/*
 		This is returned when the bcSET_NEXT_EVENT_TIME has elapsed.
 		At this point the next event time is set to B_INFINITE_TIMEOUT,
@@ -297,12 +297,12 @@ enum BinderDriverReturnProtocol {
 		have another event pending.
 	*/
 	
-	brFINISHED
+	BR_FINISHED
 };
 @endcode
 
 Continuing our example, the receiving thread will come back with a
-brTRANSACTION command at the end of its buffer.  This command uses the
+BR_TRANSACTION command at the end of its buffer.  This command uses the
 same binder_transaction_data structure that was used to send the data,
 basically containing the same information that was sent but now available
 in the local process space.
@@ -316,9 +316,9 @@ sending the reply back to the original process and leaving the thread
 waiting for the next transaction to perform.
 
 The original thread finally returns back from its own BINDER_WRITE_READ
-with a brREPLY command containing the reply data.
+with a BR_REPLY command containing the reply data.
 
-Note that the original thread may also receive brTRANSACTION commands while
+Note that the original thread may also receive BR_TRANSACTION commands while
 it is waiting for a reply.  This represents a recursion across processes &mdash;
 the receiving thread making a call on to an object back in the original
 process.  It is the responsibility of the driver to keep track of all

@@ -389,8 +389,9 @@ status_t SLooper::Loop(bool isMain)
 bool SLooper::_SetNextEventTime(nsecs_t when, int32_t priority)
 {
 	SLooper* looper = This();	
-	
-	binder_wakeup_time wakeup;
+
+	// XXXB
+	/*binder_wakeup_time wakeup;
 	// FFB: specifying a relative time makes the kernel driver much simpler, for now.
 	wakeup.time = when - SysGetRunTime();
 	wakeup.priority = priority;
@@ -400,7 +401,7 @@ bool SLooper::_SetNextEventTime(nsecs_t when, int32_t priority)
 		// return false to indicate that the driver will take care
 		// of scheduling the next event.
 		return false;
-	}
+	}*/
 	
 	// let the user-space scheduling code run.
 	return true;
@@ -414,8 +415,9 @@ void SLooper::StopProcess(const sptr<IBinder>& rootObject, bool now)
 {
 	SLooper* looper = This();
 	if (!looper) return;
-	
-	BpBinder* remote = rootObject->RemoteBinder();
+
+	// XXXB
+	/*BpBinder* remote = rootObject->RemoteBinder();
 	if (remote) {
 		looper->m_out.WriteInt32(bcSTOP_PROCESS);
 		looper->m_out.WriteInt32(remote->Handle());
@@ -425,7 +427,7 @@ void SLooper::StopProcess(const sptr<IBinder>& rootObject, bool now)
 		looper->m_out.WriteInt32(bcSTOP_SELF);
 		looper->m_out.WriteInt32(now ? 1 : 0);
 		looper->_TransactWithDriver(false);
-	}
+	}*/
 }
 
 void SLooper::_CatchRootObjects(catch_root_func func)
@@ -436,7 +438,8 @@ void SLooper::_CatchRootObjects(catch_root_func func)
 
 sptr<IBinder> SLooper::ReceiveRootObject(pid_t process)
 {
-	BINDER_IPC_PROFILE_STATE;
+	// XXXB
+	/*BINDER_IPC_PROFILE_STATE;
 	
 	m_out.WriteInt32(bcRETRIEVE_ROOT_OBJECT);
 	m_out.WriteInt32((int32_t)process);
@@ -453,7 +456,7 @@ sptr<IBinder> SLooper::ReceiveRootObject(pid_t process)
 	bout << "Getting root object: object=" << object << endl;
 	#endif
 	
-	return object;
+	return object;*/
 }
 
 status_t SLooper::SendRootObject(const sptr<IBinder>& rootNode)
@@ -465,7 +468,7 @@ status_t SLooper::SendRootObject(const sptr<IBinder>& rootNode)
 	bout << "Setting root object: " << data << endl;
 	#endif
 	
-	return This()->_Reply(tfRootObject,data);
+	return This()->_Reply(TF_ROOT_OBJECT, data);
 }
 
 void SLooper::SetContextObject(	const sptr<IBinder>& object, const SString& name)
@@ -925,15 +928,16 @@ SLooper::_HandleCommand(int32_t cmd)
 			SParcel buffer(tr.data.ptr.buffer, tr.data_size, _BufferFree, this);
 			// syslog(LOG_DEBUG, "BR_TRANSACTION data: %d, offsets: %d\n", tr.data_size, tr.offsets_size);
 			buffer.SetBinderOffsets(tr.data.ptr.offsets, tr.offsets_size, false);
-			m_priority = tr.priority;
+			// XXXB
+			//m_priority = tr.priority;
 			
 #if BINDER_TRANSACTION_MSGS
-			bout << "Receiving transaction " << STypeCode(tr.code) << " to " << tr.target.ptr
+			bout << "Receiving transaction " << STypeCode(tr.code) << " to " << (void*)tr.target.ptr
 				<< ": " << buffer << endl;
 #endif
 
 			SLooper::catch_root_func crf;
-			if ((tr.flags&tfRootObject) && (crf=g_catchRootFunc) != NULL) {
+			if ((tr.flags&TF_ROOT_OBJECT) && (crf=g_catchRootFunc) != NULL) {
 				SValue value;
 				buffer.GetValues(1, &value);
 				sptr<IBinder> root(value.AsBinder());
@@ -987,12 +991,13 @@ SLooper::_HandleCommand(int32_t cmd)
 			buffer.Free();
 			
 		} break;
-		case BR_EVENT_OCCURRED: {
-			m_priority = m_in.ReadInt32();
-			if (m_team != NULL) {
-				m_team->DispatchMessage(this);
-			}
-		} break;
+		// XXXB
+		//case BR_EVENT_OCCURRED: {
+		//	m_priority = m_in.ReadInt32();
+		//	if (m_team != NULL) {
+		//		m_team->DispatchMessage(this);
+		//	}
+		//} break;
 		case BR_FINISHED: {
 			result = -ETIMEDOUT;
 		} break;
@@ -1062,24 +1067,24 @@ SLooper::_WaitForCompletion(SParcel *reply, status_t *acquireResult)
 				return (m_lastError = amt);
 			}
 			if (reply) {
-				if ((tr.flags&tfStatusCode) == 0) {
+				if ((tr.flags&TF_STATUS_CODE) == 0) {
 					reply->Reference(	tr.data.ptr.buffer, tr.data_size,
 										_BufferFree, this);
 					reply->SetBinderOffsets(tr.data.ptr.offsets, tr.offsets_size, false);
 				} else {
-					reply->Reference(NULL, *static_cast<const ssize_t*>(tr.data.ptr.buffer));
+					reply->Reference(NULL, *static_cast<const ssize_t*>((void*)tr.data.ptr.buffer));
 					_BufferFree(tr.data.ptr.buffer, tr.data_size, this);
 				}
 				setReply = true;
 #if BINDER_BUFFER_MSGS
-				berr	<< "Creating reply buffer for " << tr.data.ptr.buffer
+				berr	<< "Creating reply buffer for " << (void*)tr.data.ptr.buffer
 						<< ", now have " << (atomic_fetch_add(&g_openBuffers, 1)+1)
 						<< " open." << endl;
 				berr << "BR_REPLY: " << *reply << endl;
 #endif
 			} else {
 #if BINDER_BUFFER_MSGS
-				berr << "Immediately freeing buffer for " << tr.data.ptr.buffer << endl;
+				berr << "Immediately freeing buffer for " << (void*)tr.data.ptr.buffer << endl;
 #endif
 				ErrFatalErrorIf(tr.data.ptr.buffer == NULL, "Sending NULL BC_FREE_BUFFER!");
 				m_out.WriteInt32(BC_FREE_BUFFER);
@@ -1233,8 +1238,9 @@ SLooper::_WriteTransaction(int32_t cmd, uint32_t binderFlags, int32_t handle, ui
 
 	tr.target.handle = handle;
 	tr.code = code;
-	tr.flags = binderFlags&~tfInline;
-	tr.priority = m_priority;
+	tr.flags = binderFlags&~TF_ONE_WAY;
+	// XXXB
+	//tr.priority = m_priority;
 	if (static_cast<ssize_t>((tr.data_size=data.Length())) >= 0) {
 		// Send this parcel's data through the binder.
 		tr.data.ptr.buffer = data.Data();
@@ -1247,7 +1253,7 @@ SLooper::_WriteTransaction(int32_t cmd, uint32_t binderFlags, int32_t handle, ui
 #endif
 	} else if (statusBuffer) {
 		// Send this parcel's status through the binder.
-		tr.flags |= tfStatusCode;
+		tr.flags |= TF_STATUS_CODE;
 		*statusBuffer = data.Length();
 		tr.data_size = sizeof(status_t);
 		tr.data.ptr.buffer = statusBuffer;

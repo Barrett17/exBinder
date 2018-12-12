@@ -112,10 +112,9 @@ class SLooper
 	
 		typedef status_t (*catch_root_func)(const sptr<IBinder>& node);
 		static	void					CatchRootObjects(catch_root_func func);
-#if TARGET_HOST == TARGET_HOST_LINUX
-				sptr<IBinder>			ReceiveRootObject(pid_t process);
-#endif // #if TARGET_HOST == TARGET_HOST_LINUX
-				status_t				SendRootObject(const sptr<IBinder>& rootNode);
+
+				sptr<IBinder>			GetContextObject(const sptr<IBinder>& caller);
+				void					SetContextObject(const sptr<IBinder>& object);
 
 		// Special boot-strap for the current environment.
 		static	void					SetContextObject(const sptr<IBinder>& object, const SString& name);

@@ -349,7 +349,7 @@ sptr<IBinder> SContext::NewCustomProcess(const SString& executable, const SVecto
 				<< " (" << (void*)errno << ")" << endl;
 			// XXX What to do on error?  This probably won't work,
 			// because we are using the same Binder file descriptor as our parent.
-			SLooper::This()->SendRootObject(NULL);
+			SLooper::This()->SetContextObject(NULL);
 			DbgOnlyFatalError("execve failed!");
 			_exit(errno);
 		}
@@ -359,9 +359,10 @@ sptr<IBinder> SContext::NewCustomProcess(const SString& executable, const SVecto
 		if (outError) *outError = errno;
 		return NULL;
 	}
-	
-	return SLooper::This()->ReceiveRootObject(pid);
+
+	return SLooper::This()->GetContextObject(NULL);
 }
+
 
 SValue SContext::Lookup(const SString& location) const
 {

@@ -10,7 +10,7 @@
  * history and logs, available at http://www.openbinder.org
  */
 
-//#define DEBUG 1
+#define DEBUG 1
 #include "LooperPrv.h"
 
 #include <support/Autolock.h>
@@ -416,59 +416,15 @@ void SLooper::StopProcess(const sptr<IBinder>& rootObject, bool now)
 	SLooper* looper = This();
 	if (!looper) return;
 
-	// XXXB
-	/*BpBinder* remote = rootObject->RemoteBinder();
-	if (remote) {
-		looper->m_out.WriteInt32(bcSTOP_PROCESS);
-		looper->m_out.WriteInt32(remote->Handle());
-		looper->m_out.WriteInt32(now ? 1 : 0);
-		looper->_TransactWithDriver(false);
-	} else if (rootObject == looper->Process()->AsBinder()) {
-		looper->m_out.WriteInt32(bcSTOP_SELF);
-		looper->m_out.WriteInt32(now ? 1 : 0);
-		looper->_TransactWithDriver(false);
-	}*/
+    int fd = s_binderDesc;
+    s_binderDesc = -1;
+    close(s_binderDesc);
 }
 
 void SLooper::_CatchRootObjects(catch_root_func func)
 {
 	g_catchRootFunc = func;
 	berr << "CatchRootObjects() not implemented for Linux!" << endl;
-}
-
-sptr<IBinder> SLooper::ReceiveRootObject(pid_t process)
-{
-	// XXXB
-	/*BINDER_IPC_PROFILE_STATE;
-	
-	m_out.WriteInt32(bcRETRIEVE_ROOT_OBJECT);
-	m_out.WriteInt32((int32_t)process);
-	
-	BEGIN_BINDER_CALL();
-
-	SParcel data;
-	_WaitForCompletion(&data);
-	sptr<IBinder> object = data.ReadBinder();
-	
-	FINISH_BINDER_CALL();
-
-	#if BINDER_DEBUG_MSGS
-	bout << "Getting root object: object=" << object << endl;
-	#endif
-	
-	return object;*/
-}
-
-status_t SLooper::SendRootObject(const sptr<IBinder>& rootNode)
-{
-	SParcel data;
-	data.WriteBinder(rootNode);
-	
-	#if BINDER_DEBUG_MSGS
-	bout << "Setting root object: " << data << endl;
-	#endif
-	
-	return This()->_Reply(TF_ROOT_OBJECT, data);
 }
 
 void SLooper::SetContextObject(	const sptr<IBinder>& object, const SString& name)
@@ -480,6 +436,16 @@ void SLooper::SetContextObject(	const sptr<IBinder>& object, const SString& name
 	g_binderContextAccess->Lock();
 	g_binderContext->AddItem(name, entry);
 	g_binderContextAccess->Unlock();
+}
+
+void SLooper::SetContextObject(const sptr<IBinder>& object)
+{
+    SetContextObject(object, SString("default"));
+}
+
+sptr<IBinder> SLooper::GetContextObject(const sptr<IBinder>& /*caller*/)
+{
+    return GetStrongProxyForHandle(0);
 }
 
 sptr<IBinder> SLooper::GetContextObject(const SString& name, const sptr<IBinder>& caller)

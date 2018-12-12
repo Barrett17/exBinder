@@ -21,8 +21,11 @@ int main(int argc, char* argv[])
 	//openlog("binderproc", LOG_PERROR | LOG_NDELAY, LOG_USER);
 	bout << "START: binderproc #" << SysProcessID() << " " << (argc > 1 ? argv[1] : "(unnamed)") << endl;
 	SLooper* loop = SLooper::This();
+	printf("Get Process Interface\n");
 	sptr<BProcess> proc(loop->Process());
-	loop->SendRootObject(proc->AsBinder());
+	printf("Set Context Object\n");
+	loop->SetContextObject(NULL);
+	printf("Loop!\n");
 	loop->Loop(true);
 	bout << "EXIT: binderproc #" << SysProcessID() << " " << (argc > 1 ? argv[1] : "(unnamed)") << endl;
 	return 0;

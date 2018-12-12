@@ -10,7 +10,7 @@
  * history and logs, available at http://www.openbinder.org
  */
 
-//#define DEBUG 1
+#define DEBUG 1
 #include <support/Process.h>
 
 #include <support/atomic.h>

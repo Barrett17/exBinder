@@ -675,6 +675,7 @@ ssize_t BPackageManager::Package::AddComponent(const sptr<BPackageManager::Compo
 {
 	SLocker::Autolock lock(m_lock);
 
+#ifdef ENABLE_PACKAGE_CHECK
 	if (component->Value()["package"].AsString() != m_name)
 	{
 #if BUILD_TYPE != BUILD_TYPE_RELEASE
@@ -683,6 +684,7 @@ ssize_t BPackageManager::Package::AddComponent(const sptr<BPackageManager::Compo
 		ErrFatalError("Adding a component that is not from this package!");
 		return B_ERROR;
 	}
+#endif
 
 	return m_components.AddItem(component);
 }
